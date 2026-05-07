@@ -45,8 +45,15 @@ def register_page():
 
     return render_template("register.html")
 
-@app.route("/search")
+@app.route("/search", methods=["GET", "POST"])
 def search_page():
+    if request.method == "POST":
+        date = request.form.get("date")
+        start_time = request.form.get("start_time")
+        end_time = request.form.get("end_time")
+
+        return f"Searching rooms for {date} from {start_time} to {end_time}"
+
     return render_template("search.html")
 
 
