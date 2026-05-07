@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
+from client import send_request
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def home():
@@ -12,7 +14,29 @@ def login():
     email = request.form.get("email")
     password = request.form.get("password")
 
-    return f"Received login from {email}"
+    message = {
+        "action": "login",
+        "email": email,
+        "password": password
+    }
+
+    response = send_request(message)
+
+    return render_template("login.html", response=response)
+
+@app.route("/register", methods=["GET", "POST"])
+def register_page():
+
+    if request.method == "POST":
+
+        full_name = request.form.get("full_name")
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        return f"Registered user: {full_name}"
+
+    return render_template("register.html")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
