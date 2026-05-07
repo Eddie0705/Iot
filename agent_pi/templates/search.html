@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Rooms</title>
+</head>
+
+<body>
+    <h1>Search Available Rooms</h1>
+
+    <form method="POST" action="/search">
+        <p>
+            <label>Date</label><br>
+            <input type="date" name="date" required>
+        </p>
+
+        <p>
+            <label>Start Time</label><br>
+            <input type="time" name="start_time" required>
+        </p>
+
+        <p>
+            <label>End Time</label><br>
+            <input type="time" name="end_time" required>
+        </p>
+
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html> 
