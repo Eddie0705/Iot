@@ -28,12 +28,20 @@ def login():
 def register_page():
 
     if request.method == "POST":
-
         full_name = request.form.get("full_name")
         email = request.form.get("email")
         password = request.form.get("password")
 
-        return f"Registered user: {full_name}"
+        message = {
+            "action": "register",
+            "full_name": full_name,
+            "email": email,
+            "password": password
+        }
+
+        response = send_request(message)
+
+        return render_template("register.html", response=response)
 
     return render_template("register.html")
 

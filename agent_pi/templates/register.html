@@ -28,6 +28,11 @@
         <button type="submit">Create Account</button>
 
     </form>
+    {% if response %}
+    <h3>Master Pi Response</h3>
+    <p>Status: {{ response.status }}</p>
+    <p>Message: {{ response.message }}</p>
+{% endif %}
 
 </body>
 </html>
