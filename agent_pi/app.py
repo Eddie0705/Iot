@@ -52,7 +52,16 @@ def search_page():
         start_time = request.form.get("start_time")
         end_time = request.form.get("end_time")
 
-        return f"Searching rooms for {date} from {start_time} to {end_time}"
+        message = {
+            "action": "search_room",
+            "date": date,
+            "start_time": start_time,
+            "end_time": end_time
+        }
+
+        response = send_request(message)
+
+        return render_template("search.html", response=response)
 
     return render_template("search.html")
 
