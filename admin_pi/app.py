@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from mqtt_admin import publish_announcement
 
 app = Flask(__name__)
 
@@ -12,5 +13,11 @@ def login():
     print(username)
 
     return render_template("dashboard.html", user=username)
+
+@app.route("/send_announcement", methods=["POST"])
+def send_announcement():
+    message = request.form["message"]
+    result = publish_announcement(message)
+    return result
 
 app.run(host="0.0.0.0", port=3000, debug=True)
