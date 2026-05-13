@@ -6,6 +6,10 @@
 <body>
 
 <h1>Welcome {{ user }}</h1>
+<form action="/send_announcement" method="POST">
+    <input type="text" name="message" placeholder="Enter announcement">
+    <button type="submit">Send</button>
+</form>
 
 </body>
 </html>
