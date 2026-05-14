@@ -20,4 +20,16 @@ def send_announcement():
     result = publish_announcement(message)
     return result
 
+@app.route("/logs")
+def logs():
+    return render_template("logs.html")
+
+@app.route("/reports")
+def reports():
+    return render_template("reports.html")
+
+@app.route("/room_status")
+def room_status():
+    return render_template("room_status.html")
+
 app.run(host="0.0.0.0", port=3000, debug=True)
