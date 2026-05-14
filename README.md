@@ -5,6 +5,7 @@
 This project is an IoT-based smart classroom management system developed for COSC2674/2755 Programming Internet of Things.
 
 The system allows:
+
 - room booking
 - classroom monitoring
 - MQTT-based announcements
@@ -18,11 +19,11 @@ The project uses Flask, MQTT, socket programming, SQLite/MySQL, and Raspberry Pi
 
 ## Team Members
 
-| Name | Role |
-|---|---|
-| Member 1 | Master Pi |
-| Member 2 | Agent Pi |
-| Member 3 | Room Pi |
+| Name      | Role                                    |
+| --------- | --------------------------------------- |
+| Member 1  | Master Pi                               |
+| Member 2  | Agent Pi                                |
+| Member 3  | Room Pi                                 |
 | Your Name | Admin, Security, Testing, Documentation |
 
 ---
@@ -42,17 +43,21 @@ The project uses Flask, MQTT, socket programming, SQLite/MySQL, and Raspberry Pi
 ---
 
 ## Project Structure
+
 admin_pi/
+
 - Flask admin dashboard
 - MQTT announcement publisher
 - Reporting system
 - Room status management
 
 agent_pi/
+
 - User booking interface
 - Login/register system
 
 room_pi/
+
 - Room monitoring display
 - Environmental sensor readings
 - Room availability display
@@ -60,8 +65,6 @@ room_pi/
 ## Installation
 
 ### Create virtual environment
-
-python3 -m venv venv
 
 ### Activate virtual environment
 
@@ -94,4 +97,3 @@ brew services start mosquitto
 - View room logs
 - Generate reports
 - Update room status
-
