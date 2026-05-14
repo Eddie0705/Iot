@@ -2,13 +2,13 @@ import socket
 import json
 
 HOST = "0.0.0.0"
-PORT = 5000
+PORT = 5050
 
 
 def handle_request(request):
     action = request.get("action")
 
-    if action == "PING":
+    if action == "ping":
         return {
             "success": True,
             "message": "Master Pi server is running"
@@ -24,7 +24,7 @@ def start_server():
     ## create TCP socket server using IPv4 addresses/socket.AF_INET and TCP protocol/socket.SOCK_STREAM
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    ## run server on 0.0.0.0 and port 5001
+    ## run server on 0.0.0.0 and port 5000
     server_socket.bind((HOST, PORT))
     ## start listening for client to connect
     server_socket.listen()
