@@ -14,6 +14,7 @@ client.on_message = on_message
 client.connect(BROKER, PORT, 60)
 
 client.subscribe("admin/announcements")
+client.subscribe("rooms/+/fault")
 
 print("Listening for announcements...")
 
