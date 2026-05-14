@@ -11,8 +11,8 @@ def publish_announcement(message):
     client.publish("admin/announcements", message)
     client.disconnect()
 
-def publish_room_fault(room_id, message):
+def publish_room_status(room_id, message):
     client = mqtt.Client()
     client.connect(BROKER, PORT, 60)
-    client.publish(f"rooms/{room_id}/fault", message)
+    client.publish(f"rooms/{room_id}/status", message)
     client.disconnect()
