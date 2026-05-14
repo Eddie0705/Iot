@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from mqtt_admin import publish_announcement
+from mqtt_admin import publish_room_status
 
 app = Flask(__name__)
 
@@ -31,5 +32,15 @@ def reports():
 @app.route("/room_status")
 def room_status():
     return render_template("room_status.html")
+
+@app.route("/update_room", methods=["POST"])
+def update_room():
+
+    room = request.form["room"]
+    status = request.form["status"]
+
+    publish_room_status(room, status)
+
+    return redirect("/room_status")
 
 app.run(host="0.0.0.0", port=3000, debug=True)
