@@ -37,6 +37,12 @@ def handle_request(request):
             "status": "success",
             "message": "Booking request received by Master Pi"
         }
+
+    if action == "cancel_booking":
+        return {
+            "status": "success",
+            "message": "Booking cancellation request received by Master Pi"
+        }    
         
         return {
             "status": "error",
