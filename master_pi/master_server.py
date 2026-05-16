@@ -10,12 +10,36 @@ def handle_request(request):
 
     if action == "ping":
         return {
-            "success": True,
+            "status": "success",
             "message": "Master Pi server is running"
         }
 
+    if action == "login":
+        return {
+            "status": "success",
+            "message": "Login request received by Master Pi"
+        }
+
+    if action == "register":
+        return {
+            "status": "success",
+            "message": "Registration request received by Master Pi"
+        }
+
+    if action == "search_room":
+        return {
+            "status": "success",
+            "message": "Room search request received by Master Pi"
+        }
+    
+    if action == "book_room":
     return {
-        "success": False,
+        "status": "success",
+        "message": "Booking request received by Master Pi"
+    }
+    
+    return {
+        "status": "error",
         "message": "Unknown action"
     }
 
@@ -34,7 +58,7 @@ def start_server():
 
     while True:
         ## wait for client to connect
-        # store client socket connection 
+        # store client socket connection
         # and client address, which is its IP address and port number
         client_socket, client_address = server_socket.accept()
         print(f"Connection from {client_address}")
@@ -44,11 +68,12 @@ def start_server():
 
         try:
             request = json.loads(data)
+            print("Received request:", request)
             response = handle_request(request)
 
         except json.JSONDecodeError:
             response = {
-                "success": False,
+                "status": "error",
                 "message": "Invalid JSON format"
             }
 
