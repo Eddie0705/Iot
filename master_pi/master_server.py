@@ -33,15 +33,15 @@ def handle_request(request):
         }
     
     if action == "book_room":
-    return {
-        "status": "success",
-        "message": "Booking request received by Master Pi"
-    }
-    
-    return {
-        "status": "error",
-        "message": "Unknown action"
-    }
+        return {
+            "status": "success",
+            "message": "Booking request received by Master Pi"
+        }
+        
+        return {
+            "status": "error",
+            "message": "Unknown action"
+        }
 
 
 def start_server():
