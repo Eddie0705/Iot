@@ -115,6 +115,33 @@ def cancel_booking():
     ## open cancel booking page
     return render_template("cancel.html")
 
+@app.route("/room-use", methods=["GET", "POST"])
+def room_use():
+
+    ## when user submits the form
+    if request.method == "POST":
+
+        ## get form data entered by user
+        booking_id = request.form["booking_id"]
+        room_id = request.form["room_id"]
+        room_action = request.form["room_action"]
+
+        ## create request data for Master Pi
+        request_data = {
+            "action": room_action,
+            "booking_id": booking_id,
+            "room_id": room_id
+        }
+
+        ## send request and get response
+        response = send_request(request_data)
+
+        ## show response back on webpage
+        return render_template("room_use.html", response=response)
+
+    ## open room use page
+    return render_template("room_use.html")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

@@ -42,7 +42,19 @@ def handle_request(request):
         return {
             "status": "success",
             "message": "Booking cancellation request received by Master Pi"
-        }    
+        }
+
+    if action == "use_room":
+        return {
+            "status": "success",
+            "message": "Use room request received by Master Pi"
+        }
+
+    if action == "return_room":
+        return {
+            "status": "success",
+            "message": "Return room request received by Master Pi"
+        }        
         
         return {
             "status": "error",
