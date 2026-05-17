@@ -5,10 +5,10 @@ import time
 # from ..common.config import *
 import paho.mqtt.client as mqtt
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 
-s = SenseHat()
+# s = SenseHat()
 client = mqtt.Client()
 KEEPALIVE = 60 # how long to keep the connection Alive in seconds
 
@@ -24,8 +24,16 @@ def home():
 @app.route('/weather')
 def weatherUpdates():
     # Renders index.html from the templates folder
-    humidity, pressure, temperature = getStats()
+    humidity, pressure, temperature = ("waiting","waiting","waiting")# getStats()
     return render_template('weather.html', humidity=humidity, pressure=pressure, temperature=temperature)
+
+# for javacript refreshes
+@app.route("/weather-data")
+def weatherData():
+    humidity, pressure, temperature = (67, 1, 3)  # getStats()
+    return jsonify(
+        {"humidity": humidity, "pressure": pressure, "temperature": temperature}
+    )
 
 @app.route('/booking')
 def bookingStatusNow():
