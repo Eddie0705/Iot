@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, render_template, request, redirect
 from mqtt_admin import publish_announcement
 from mqtt_admin import publish_room_status
@@ -9,6 +11,36 @@ room_statuses = {
     "A102": "Occupied",
     "A103": "Maintenance"
 }
+
+logs = [
+    {
+        "type": "Booking Request",
+        "room": "A101",
+        "message": "Charli requested booking",
+        "time": "19:30"
+    },
+
+    {
+        "type": "Room Status",
+        "room": "A102",
+        "message": "Room changed to Occupied",
+        "time": "19:35"
+    },
+
+    {
+        "type": "Fault Alert",
+        "room": "A103",
+        "message": "Projector not working",
+        "time": "19:40"
+    },
+
+    {
+        "type": "Announcement",
+        "room": "-",
+        "message": "Maintenance scheduled tomorrow",
+        "time": "19:45"
+    }
+]
 
 @app.route("/")
 def home():
@@ -27,9 +59,6 @@ def send_announcement():
     result = publish_announcement(message)
     return result
 
-@app.route("/logs")
-def logs():
-    return render_template("logs.html")
 
 @app.route("/reports")
 def reports():
@@ -50,8 +79,24 @@ def update_room():
     status = request.form["status"]
 
     room_statuses[room] = status
+
+    logs.append({
+    "type": "Room Status",
+    "room": room,
+    "message": f"{room} changed to {status}",
+    "time": datetime.now().strftime("%H:%M")
+})
+    
     publish_room_status(room, status)
 
     return redirect("/room_status")
+
+@app.route("/logs")
+def logs_page():
+
+    return render_template(
+        "logs.html",
+        logs=logs
+    )
 
 app.run(host="0.0.0.0", port=3000, debug=True)
