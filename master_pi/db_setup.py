@@ -1,15 +1,17 @@
-import mysql.connector
+import MySQLdb
 import sys
 
 
 def get_connection():
-    return mysql.connector.connect(
+    return MySQLdb.connect(
         host="34.30.131.18",
         user="root",
-        password=")VZ3FKr&B&nH" + '#'+ "7C",
-        database="room_booking"
+        passwd=")VZ3FKr&B&nH" + '#'+ "7C",
+        db="room_booking"
     )
 
+
+con = None
 
 try:
     con = get_connection()
@@ -75,7 +77,7 @@ try:
         con.commit()
         print("Cloud MySQL tables created successfully.")
 
-except mysql.connector.Error as e:
+except MySQLdb.Error as e:
     print(f"MySQL error: {e}")
     sys.exit(1)
 
