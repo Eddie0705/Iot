@@ -59,11 +59,6 @@ def send_announcement():
     result = publish_announcement(message)
     return result
 
-
-@app.route("/reports")
-def reports():
-    return render_template("reports.html")
-
 @app.route("/room_status")
 def room_status():
 
@@ -97,6 +92,31 @@ def logs_page():
     return render_template(
         "logs.html",
         logs=logs
+    )
+
+@app.route("/reports")
+def reports():
+
+    total_rooms = len(room_statuses)
+
+    occupied = list(room_statuses.values()).count("Occupied")
+
+    available = list(room_statuses.values()).count("Available")
+
+    maintenance = list(room_statuses.values()).count("Maintenance")
+
+    fault_logs = len([
+        log for log in logs
+        if log["type"] == "Fault Alert"
+    ])
+
+    return render_template(
+        "reports.html",
+        total_rooms=total_rooms,
+        occupied=occupied,
+        available=available,
+        maintenance=maintenance,
+        fault_logs=fault_logs
     )
 
 app.run(host="0.0.0.0", port=3000, debug=True)
