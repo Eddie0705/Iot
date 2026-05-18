@@ -1,5 +1,9 @@
 <form action="/update_room" method="POST">
-    <input type="text" name="room">
+    <select name="room">
+        <option>A101</option>
+        <option>A102</option>
+        <option>A103</option>
+    </select>
 
     <select name="status">
         <option>Available</option>
@@ -10,3 +14,13 @@
 
     <button type="submit">Update</button>
 </form>
+
+<h2>Room Status</h2>
+
+<ul>
+    {% for room, status in rooms.items() %}
+        <li>
+            {{ room }} → {{ status }}
+        </li>
+    {% endfor %}
+</ul>
