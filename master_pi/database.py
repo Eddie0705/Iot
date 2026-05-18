@@ -13,8 +13,8 @@ def login_user(email, password):
         cur.execute("""
             SELECT user_id, email, full_name, role
             FROM users
-            WHERE email = ?
-            AND password = ?
+            WHERE email = %s
+            AND password = %s
             AND status = 'active'
         """, (email, password))
 
