@@ -65,6 +65,83 @@ def search_page():
 
     return render_template("search.html")
 
+@app.route("/book", methods=["GET", "POST"])
+def book_room():
+
+    # when user submits booking form
+    if request.method == "POST":
+
+        room_id = request.form["room_id"]
+        date = request.form["date"]
+        start_time = request.form["start_time"]
+        end_time = request.form["end_time"]
+
+        # create request message for Master Pi
+        request_data = {
+            "action": "book_room",
+            "room_id": room_id,
+            "date": date,
+            "start_time": start_time,
+            "end_time": end_time
+        }
+
+        # send request through socket
+        response = send_request(request_data)
+
+        return render_template("book.html", response=response)
+
+    # open booking page
+    return render_template("book.html")
+
+@app.route("/cancel", methods=["GET", "POST"])
+def cancel_booking():
+    ## when user submits the cancellation form
+    if request.method == "POST":
+        ## get booking id entered by user
+        booking_id = request.form["booking_id"]
+
+        ## create request data to send to Master Pi
+        request_data = {
+            "action": "cancel_booking",
+            "booking_id": booking_id
+        }
+
+        ## send request to Master Pi and get response
+        response = send_request(request_data)
+
+        ## show response back on cancel page
+        return render_template("cancel.html", response=response)
+
+    ## open cancel booking page
+    return render_template("cancel.html")
+
+@app.route("/room-use", methods=["GET", "POST"])
+def room_use():
+
+    ## when user submits the form
+    if request.method == "POST":
+
+        ## get form data entered by user
+        booking_id = request.form["booking_id"]
+        room_id = request.form["room_id"]
+        room_action = request.form["room_action"]
+
+        ## create request data for Master Pi
+        request_data = {
+            "action": room_action,
+            "booking_id": booking_id,
+            "room_id": room_id
+        }
+
+        ## send request and get response
+        response = send_request(request_data)
+
+        ## show response back on webpage
+        return render_template("room_use.html", response=response)
+
+    ## open room use page
+    return render_template("room_use.html")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
