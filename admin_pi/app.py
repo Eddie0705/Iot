@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from flask import Flask, render_template, request, redirect
 from mqtt_admin import publish_announcement
 from mqtt_admin import publish_room_status
@@ -12,9 +11,11 @@ room_statuses = {
     "A103": "Maintenance"
 }
 
+
 logs = [
+
     {
-        "type": "Booking Request",
+        "type": "Booking Log",
         "room": "A101",
         "message": "Charli requested booking",
         "time": "19:30"
@@ -28,17 +29,24 @@ logs = [
     },
 
     {
-        "type": "Fault Alert",
-        "room": "A103",
-        "message": "Projector not working",
-        "time": "19:40"
+        "type": "Booking Log",
+        "room": "A102",
+        "message": "Eddie booked study room",
+        "time": "20:00"
+    }
+]
+
+fault_reports = [
+    {
+        "room": "A204",
+        "issue": "Projector broken",
+        "status": "Fault"
     },
 
     {
-        "type": "Announcement",
-        "room": "-",
-        "message": "Maintenance scheduled tomorrow",
-        "time": "19:45"
+        "room": "A102",
+        "issue": "Air conditioning failure",
+        "status": "Fault"
     }
 ]
 
@@ -111,26 +119,9 @@ def logs_page():
 @app.route("/reports")
 def reports():
 
-    total_rooms = len(room_statuses)
-
-    occupied = list(room_statuses.values()).count("Occupied")
-
-    available = list(room_statuses.values()).count("Available")
-
-    maintenance = list(room_statuses.values()).count("Maintenance")
-
-    fault_logs = len([
-        log for log in logs
-        if log["type"] == "Fault Alert"
-    ])
-
     return render_template(
         "reports.html",
-        total_rooms=total_rooms,
-        occupied=occupied,
-        available=available,
-        maintenance=maintenance,
-        fault_logs=fault_logs
+        fault_reports=fault_reports
     )
 
 @app.route("/users")
@@ -140,5 +131,28 @@ def users_page():
         "users.html",
         users=users
     )
+
+@app.route("/confirm_fault/<room>")
+def confirm_fault(room):
+
+    room_statuses[room] = "Under Maintenance"
+
+    for report in fault_reports:
+
+        if report["room"] == room:
+            report["status"] = "Under Maintenance"
+
+    publish_announcement(
+        f"Room {room} down, waiting for maintenance"
+    )
+
+    logs.append({
+        "type": "Fault Decision",
+        "room": room,
+        "message": f"{room} waiting for maintenance",
+        "time": datetime.now().strftime("%H:%M")
+    })
+
+    return redirect("/reports")
 
 app.run(host="0.0.0.0", port=3000, debug=True)
