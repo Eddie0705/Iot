@@ -42,6 +42,20 @@ logs = [
     }
 ]
 
+users = [
+    {
+        "username": "Charli",
+        "role": "Admin",
+        "status": "Active"
+    },
+
+    {
+        "username": "Eddie",
+        "role": "Staff",
+        "status": "Active"
+    }
+]
+
 @app.route("/")
 def home():
     return render_template("admin_login.html")
@@ -117,6 +131,14 @@ def reports():
         available=available,
         maintenance=maintenance,
         fault_logs=fault_logs
+    )
+
+@app.route("/users")
+def users_page():
+
+    return render_template(
+        "users.html",
+        users=users
     )
 
 app.run(host="0.0.0.0", port=3000, debug=True)
