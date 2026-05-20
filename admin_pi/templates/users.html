@@ -1,0 +1,17 @@
+<table border="1">
+
+    <tr>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Status</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.status }}</td>
+    </tr>
+    {% endfor %}
+
+</table>

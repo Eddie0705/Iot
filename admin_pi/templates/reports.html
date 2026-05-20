@@ -1,9 +1,42 @@
-<h2>System Reports</h2>
+<h2>Fault Reports</h2>
 
-<ul>
-    <li>Total Rooms: {{ total_rooms }}</li>
-    <li>Occupied Rooms: {{ occupied }}</li>
-    <li>Available Rooms: {{ available }}</li>
-    <li>Maintenance Rooms: {{ maintenance }}</li>
-    <li>Total Fault Alerts: {{ fault_logs }}</li>
-</ul>
+<table border="1">
+
+    <tr>
+        <th>Room</th>
+        <th>Issue</th>
+        <th>Status</th>
+        <th>Decision</th>
+    </tr>
+
+    {% for report in fault_reports %}
+
+    <tr>
+
+        <td>{{ report.room }}</td>
+
+        <td>{{ report.issue }}</td>
+
+        <td>{{ report.status }}</td>
+
+        <td>
+
+            {% if report.status == "Fault" %}
+
+                <a href="/confirm_fault/{{ report.room }}">
+                    Confirm Fault
+                </a>
+
+            {% else %}
+
+                Maintenance Requested
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
