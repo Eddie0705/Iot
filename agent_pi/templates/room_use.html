@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Use or Return Room</title>
+</head>
+
+<body>
+
+    <h1>Use or Return Room</h1>
+
+    <form method="POST" action="/room-use">
+
+        <label>Booking ID:</label><br>
+        <input type="text" name="booking_id" required><br><br>
+
+        <label>Room ID:</label><br>
+        <input type="text" name="room_id" required><br><br>
+
+        <label>Action:</label><br>
+        <select name="room_action" required>
+            <option value="use_room">Use Room</option>
+            <option value="return_room">Return Room</option>
+        </select><br><br>
+
+        <button type="submit">Send Request</button>
+
+    </form>
+
+    {% if response %}
+        <h2>Master Pi Response</h2>
+        <p>Status: {{ response.status }}</p>
+        <p>Message: {{ response.message }}</p>
+    {% endif %}
+
+</body>
+</html>
