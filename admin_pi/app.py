@@ -18,30 +18,6 @@ room_statuses = {
 }
 
 
-logs = [
-
-    {
-        "type": "Booking Log",
-        "room": "A101",
-        "message": "Charli requested booking",
-        "time": "19:30"
-    },
-
-    {
-        "type": "Room Status",
-        "room": "A102",
-        "message": "Room changed to Occupied",
-        "time": "19:35"
-    },
-
-    {
-        "type": "Booking Log",
-        "room": "A102",
-        "message": "Eddie booked study room",
-        "time": "20:00"
-    }
-]
-
 fault_reports = [
     {
         "room": "A204",
@@ -56,19 +32,6 @@ fault_reports = [
     }
 ]
 
-users = [
-    {
-        "username": "Charli",
-        "role": "Admin",
-        "status": "Active"
-    },
-
-    {
-        "username": "Eddie",
-        "role": "Staff",
-        "status": "Active"
-    }
-]
 
 @app.route("/")
 def home():
@@ -103,11 +66,6 @@ def users():
     con.close()
     return render_template("users.html", users=users)
 
-
-@app.route("/reports")
-def reports():
-    return render_template("reports.html")
-
 @app.route("/room_status")
 def room_status():
     room_status = get_all_room_status()
@@ -124,13 +82,6 @@ def update_room():
 
     return redirect("/room_status")
 
-@app.route("/logs")
-def logs_page():
-
-    return render_template(
-        "logs.html",
-        logs=logs
-    )
 
 @app.route("/reports")
 def reports():
