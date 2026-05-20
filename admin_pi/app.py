@@ -1,48 +1,24 @@
-from datetime import datetime
 from flask import Flask, render_template, request, redirect
 from mqtt_admin import publish_announcement
 from mqtt_admin import publish_room_status
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'master_pi'))
 
-from db_setup import get_connection
 from database import get_booking_logs, get_usage_logs, get_all_room_status, update_room_status
 
-
 app = Flask(__name__)
-
-room_statuses = {
-    "A101": "Available",
-    "A102": "Occupied",
-    "A103": "Maintenance"
-}
-
-
-fault_reports = [
-    {
-        "room": "A204",
-        "issue": "Projector broken",
-        "status": "Fault"
-    },
-
-    {
-        "room": "A102",
-        "issue": "Air conditioning failure",
-        "status": "Fault"
-    }
-]
 
 
 @app.route("/")
 def home():
     return render_template("admin_login.html")
 
+
 @app.route("/login", methods=["POST"])
 def login():
     username = request.form["username"]
-    print(username)
-
     return render_template("dashboard.html", user=username)
+
 
 @app.route("/send_announcement", methods=["POST"])
 def send_announcement():
@@ -57,69 +33,83 @@ def logs():
     usage_rows = get_usage_logs()
     return render_template("logs.html", booking_logs=booking_rows, usage_logs=usage_rows)
 
+
 @app.route("/users")
 def users():
-    con = get_connection()
-    cur = con.cursor()
-    cur.execute("SELECT user_id, email, full_name, rmit_id, role, status FROM users")
-    users = cur.fetchall()
-    con.close()
-    return render_template("users.html", users=users)
+    from database import get_all_users
+    rows = get_all_users()
+    return render_template("users.html", users=rows)
 
-@app.route("/room_status")
-def room_status():
-    room_status = get_all_room_status()
-    return render_template("room_status.html", room_status=room_status)
 
-@app.route("/update_room", methods=["POST"])
-def update_room():
+@app.route("/create_staff", methods=["POST"])
+def create_staff():
+    from database import create_security_staff
+    create_security_staff(
+        request.form["email"],
+        request.form["password"],
+        request.form["full_name"],
+        request.form["rmit_id"]
+    )
+    return redirect("/users")
 
-    room = request.form["room"]
-    status = request.form["status"]
 
-    update_room_status(room, status)
-    publish_room_status(room, status)
+@app.route("/edit_user/<int:user_id>")
+def edit_user(user_id):
+    from database import get_user_by_id
+    user = get_user_by_id(user_id)
+    return render_template("edit_user.html", user=user)
 
-    return redirect("/room_status")
+
+@app.route("/update_user/<int:user_id>", methods=["POST"])
+def update_user(user_id):
+    from database import update_user as db_update_user
+    db_update_user(
+        user_id,
+        request.form["email"],
+        request.form["full_name"],
+        request.form["role"],
+        request.form["status"]
+    )
+    return redirect("/users")
+
+
+@app.route("/delete_user/<int:user_id>", methods=["POST"])
+def delete_user(user_id):
+    from database import delete_user as db_delete_user
+    db_delete_user(user_id)
+    return redirect("/users")
 
 
 @app.route("/reports")
 def reports():
+    from database import get_fault_reports
+    rows = get_fault_reports()
+    return render_template("reports.html", fault_reports=rows)
 
-    return render_template(
-        "reports.html",
-        fault_reports=fault_reports
-    )
 
-@app.route("/users")
-def users_page():
-
-    return render_template(
-        "users.html",
-        users=users
-    )
-
-@app.route("/confirm_fault/<room>")
-def confirm_fault(room):
-
-    room_statuses[room] = "Under Maintenance"
-
-    for report in fault_reports:
-
-        if report["room"] == room:
-            report["status"] = "Under Maintenance"
-
-    publish_announcement(
-        f"Room {room} down, waiting for maintenance"
-    )
-
-    logs.append({
-        "type": "Fault Decision",
-        "room": room,
-        "message": f"{room} waiting for maintenance",
-        "time": datetime.now().strftime("%H:%M")
-    })
-
+@app.route("/confirm_fault/<int:report_id>", methods=["POST"])
+def confirm_fault(report_id):
+    from database import resolve_fault_report, get_fault_report_room
+    room_name = get_fault_report_room(report_id)
+    resolve_fault_report(report_id)
+    update_room_status(room_name, "maintenance")
+    publish_announcement(f"Room {room_name} down, waiting for maintenance")
     return redirect("/reports")
+
+
+@app.route("/room_status")
+def room_status():
+    rows = get_all_room_status()
+    return render_template("room_status.html", room_status=rows)
+
+
+@app.route("/update_room", methods=["POST"])
+def update_room():
+    room = request.form["room"]
+    status = request.form["status"]
+    update_room_status(room, status)
+    publish_room_status(room, status)
+    return redirect("/room_status")
+
 
 app.run(host="0.0.0.0", port=3000, debug=True)
