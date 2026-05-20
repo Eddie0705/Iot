@@ -13,8 +13,8 @@ def login_user(email, password):
         cur.execute("""
             SELECT user_id, email, full_name, role
             FROM users
-            WHERE email = ?
-            AND password = ?
+            WHERE email = %s
+            AND password = %s
             AND status = 'active'
         """, (email, password))
 
@@ -81,7 +81,7 @@ def get_booking_history(user_id):
         SELECT b.booking_id, r.room_name, b.start_time, b.end_time, b.status
         FROM bookings b
         JOIN rooms r ON b.room_id = r.room_id
-        WHERE b.user_id = ?
+        WHERE b.user_id = %s
         ORDER BY b.created_at DESC
     """, (user_id,))
     rows = cur.fetchall()
@@ -98,3 +98,14 @@ def get_all_room_status():
     rows = cur.fetchall()
     con.close()
     return rows
+
+def update_room_status(room_name, status):
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("""
+        UPDATE rooms
+        SET status = %s
+        WHERE room_name = %s
+    """, (status, room_name))
+    con.commit()
+    con.close()

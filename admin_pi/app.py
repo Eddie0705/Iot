@@ -5,7 +5,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'master_pi'))
 
 from db_setup import get_connection
-from database import get_booking_logs, get_usage_logs, get_all_room_status
+from database import get_booking_logs, get_usage_logs, get_all_room_status, update_room_status
 
 
 app = Flask(__name__)
@@ -59,6 +59,7 @@ def update_room():
     room = request.form["room"]
     status = request.form["status"]
 
+    update_room_status(room, status)
     publish_room_status(room, status)
 
     return redirect("/room_status")
