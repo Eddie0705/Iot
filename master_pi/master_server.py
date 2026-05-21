@@ -1,5 +1,6 @@
 import socket
 import json
+from db_setup import get_connection
 
 HOST = "0.0.0.0"
 PORT = 5050
@@ -15,23 +16,82 @@ def handle_request(request):
         }
 
     if action == "login":
-        return {
-            "status": "success",
-            "message": "Login request received by Master Pi"
-        }
+        try:
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                SELECT user_id, email, full_name, role
+                FROM users
+                WHERE email = %s
+                AND password = %s
+                AND status = 'active'
+            """, (
+                request.get("email"),
+                request.get("password")
+            ))
+
+            user = cur.fetchone()
+            con.close()
+
+            if user:
+                return {
+                    "status": "success",
+                    "message": "Login successful",
+                    "user_id": user[0],
+                    "email": user[1],
+                    "full_name": user[2],
+                    "role": user[3]
+                }
+
+            return {
+                "status": "error",
+                "message": "Invalid email or password"
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Login failed: {e}"
+            }
 
     if action == "register":
-        return {
-            "status": "success",
-            "message": "Registration request received by Master Pi"
-        }
+        try:
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                INSERT INTO users (email, password, full_name, rmit_id, role, status)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                request.get("email"),
+                request.get("password"),
+                request.get("full_name"),
+                request.get("rmit_id"),
+                request.get("role", "user"),
+                "active"
+            ))
+
+            con.commit()
+            con.close()
+
+            return {
+                "status": "success",
+                "message": "User registered successfully"
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Registration failed: {e}"
+            }
 
     if action == "search_room":
         return {
             "status": "success",
             "message": "Room search request received by Master Pi"
         }
-    
+
     if action == "book_room":
         return {
             "status": "success",
@@ -54,20 +114,24 @@ def handle_request(request):
         return {
             "status": "success",
             "message": "Return room request received by Master Pi"
-        }        
-        
-        return {
-            "status": "error",
-            "message": "Unknown action"
         }
+
+    return {
+        "status": "error",
+        "message": "Unknown action"
+    }
 
 
 def start_server():
     ## create TCP socket server using IPv4 addresses/socket.AF_INET and TCP protocol/socket.SOCK_STREAM
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    ## run server on 0.0.0.0 and port 5000
+    ## allow the socket to reuse the port quickly after restarting the server
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    ## run server on 0.0.0.0 and port 5050
     server_socket.bind((HOST, PORT))
+
     ## start listening for client to connect
     server_socket.listen()
 
@@ -81,7 +145,7 @@ def start_server():
         client_socket, client_address = server_socket.accept()
         print(f"Connection from {client_address}")
 
-        ## receive data from client up to 4065 bytes and then decode it from bytes to string/normal text
+        ## receive data from client up to 4096 bytes and then decode it from bytes to string/normal text
         data = client_socket.recv(4096).decode()
 
         try:
