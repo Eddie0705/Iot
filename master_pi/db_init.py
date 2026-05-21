@@ -4,7 +4,9 @@ from db_setup import get_connection
 con = None
 
 try:
+    print("Initializing database...")
     con = get_connection()
+    print("Connected to database successfully.")
     cur = con.cursor()
 
     cur.execute("DROP TABLE IF EXISTS system_logs")

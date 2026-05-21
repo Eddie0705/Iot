@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Header Block for titles, CSS, meta tags -->
+    <title>Room Pi</title>
+</head>
+<body>
+    <div class="Bookings">
+        <h1>Booking Status</h1>
+        <p>Status: <span id="status">{{ status}}</span></p>
+        <script>
+            function fetchBookingStatus() {
+                fetch("/booking-data")
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("status").innerText = data.status;
+                    })
+                    .catch(error => console.error('Error updating weather:', error));
+
+            }
+            setInterval(fetchBookingStatus, 3000);
+        </script>
+    </div>
+    <div class="Weather">
+        <h1>Weather Stats</h1>
+        <p>Temperature: <span id="temp">{{ temperature }}</span>°C</p>
+        <p>Humidity: <span id="humid">{{ humidity }}</span>%</p>
+        <p>Pressure: <span id="press">{{ pressure }}</span> hPa</p>
+
+    <script>
+        function fetchWeather() {
+            // Call the JSON data route
+            fetch('/weather-data')
+                .then(response => response.json())
+                .then(data => {
+                    // Update the HTML text with the new values
+                    document.getElementById('temp').innerText = data.temperature;
+                    document.getElementById('humid').innerText = data.humidity;
+                    document.getElementById('press').innerText = data.pressure;
+                })
+                .catch(error => console.error('Error updating weather:', error));
+        }
+
+        // Check for new weather data every 3000 milliseconds (3 seconds)
+        setInterval(fetchWeather, 3000);
+    </script>
+    </div>
+</body>
+</html>

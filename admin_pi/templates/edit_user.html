@@ -1,0 +1,21 @@
+<h2>Edit User</h2>
+
+<form action="/update_user/{{ user[0] }}" method="POST">
+    <label>Email: <input type="email" name="email" value="{{ user[1] }}" required></label><br>
+    <label>Full Name: <input type="text" name="full_name" value="{{ user[2] }}" required></label><br>
+    <label>Role:
+        <select name="role">
+            <option value="user" {% if user[4] == 'user' %}selected{% endif %}>User</option>
+            <option value="security" {% if user[4] == 'security' %}selected{% endif %}>Security</option>
+            <option value="admin" {% if user[4] == 'admin' %}selected{% endif %}>Admin</option>
+        </select>
+    </label><br>
+    <label>Status:
+        <select name="status">
+            <option value="active" {% if user[5] == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if user[5] == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+    </label><br>
+    <button type="submit">Save</button>
+    <a href="/users">Cancel</a>
+</form>
