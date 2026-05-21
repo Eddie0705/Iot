@@ -5,9 +5,11 @@
 </head>
 
 <body>
+
     <h1>Search Available Rooms</h1>
 
     <form method="POST" action="/search">
+
         <p>
             <label>Date</label><br>
             <input type="date" name="date" required>
@@ -24,11 +26,42 @@
         </p>
 
         <button type="submit">Search</button>
+
     </form>
+
     {% if response %}
-    <h3>Master Pi Response</h3>
-    <p>Status: {{ response.status }}</p>
-    <p>Message: {{ response.message }}</p>
-{% endif %}
+        <h3>Master Pi Response</h3>
+        <p>Status: {{ response.status }}</p>
+        <p>Message: {{ response.message }}</p>
+    {% endif %}
+
+    {% if response and response.rooms %}
+        <h3>Available Rooms</h3>
+
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Room ID</th>
+                <th>Room Name</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Status</th>
+            </tr>
+
+            {% for room in response.rooms %}
+            <tr>
+                <td>{{ room.room_id }}</td>
+                <td>{{ room.room_name }}</td>
+                <td>{{ room.location }}</td>
+                <td>{{ room.capacity }}</td>
+                <td>{{ room.status }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <br><br>
+
+    <a href="/dashboard">Back to Dashboard</a>
+
 </body>
-</html> 
+</html>

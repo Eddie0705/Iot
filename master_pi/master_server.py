@@ -87,10 +87,40 @@ def handle_request(request):
             }
 
     if action == "search_room":
-        return {
-            "status": "success",
-            "message": "Room search request received by Master Pi"
-        }
+        try:
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                SELECT room_id, room_name, location, capacity, status
+                FROM rooms
+                WHERE status = 'available'
+            """)
+
+            rooms = cur.fetchall()
+            con.close()
+
+            room_list = []
+            for room in rooms:
+                room_list.append({
+                    "room_id": room[0],
+                    "room_name": room[1],
+                    "location": room[2],
+                    "capacity": room[3],
+                    "status": room[4]
+                })
+
+            return {
+                "status": "success",
+                "message": "Available rooms found",
+                "rooms": room_list
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e)
+            }
 
     if action == "book_room":
         return {
