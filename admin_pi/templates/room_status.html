@@ -1,26 +1,33 @@
-<form action="/update_room" method="POST">
-    <select name="room">
-        <option>A101</option>
-        <option>A102</option>
-        <option>A103</option>
-    </select>
-
-    <select name="status">
-        <option>Available</option>
-        <option>Occupied</option>
-        <option>Maintenance</option>
-        <option>Fault</option>
-    </select>
-
-    <button type="submit">Update</button>
-</form>
-
 <h2>Room Status</h2>
 
-<ul>
-    {% for room, status in rooms.items() %}
-        <li>
-            {{ room }} → {{ status }}
-        </li>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Room</th>
+        <th>Location</th>
+        <th>Capacity</th>
+        <th>Status</th>
+        <th>Update</th>
+    </tr>
+    {% for room in room_status %}
+    <tr>
+        <td>{{ room[0] }}</td>
+        <td>{{ room[1] }}</td>
+        <td>{{ room[2] }}</td>
+        <td>{{ room[3] }}</td>
+        <td>{{ room[4] }}</td>
+        <td>
+            <form action="/update_room" method="POST">
+                <input type="hidden" name="room" value="{{ room[1] }}">
+                <select name="status">
+                    <option value="available">Available</option>
+                    <option value="in_use">In Use</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="fault">Fault</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
