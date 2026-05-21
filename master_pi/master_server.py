@@ -170,10 +170,39 @@ def handle_request(request):
             }
 
     if action == "cancel_booking":
-        return {
-            "status": "success",
-            "message": "Booking cancellation request received by Master Pi"
-        }
+        try:
+            booking_id = request.get("booking_id")
+
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                UPDATE bookings
+                SET status = 'cancelled'
+                WHERE booking_id = %s
+            """, (booking_id,))
+
+            con.commit()
+
+            if cur.rowcount > 0:
+                response = {
+                    "status": "success",
+                    "message": f"Booking {booking_id} cancelled successfully"
+                }
+            else:
+                response = {
+                    "status": "error",
+                    "message": "Booking ID not found"
+                }
+
+            con.close()
+            return response
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e)
+            }
 
     if action == "use_room":
         return {
