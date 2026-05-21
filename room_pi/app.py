@@ -11,8 +11,10 @@ from flask import Flask, render_template, request, jsonify
 # s = SenseHat()
 client = mqtt.Client()
 BROKER = "INSERT.IP" # FIND THAT IP
-RESPONSES = [
-    "response/bookings"
+subscribeTopics = [
+    # empty cos we add the responses as we go on
+    # reponses.append("reponse/XXXX")
+    # on client connect to broker appends all responses and listens to them
 ]
 client.connect(BROKER)
 client.loop_start()
@@ -31,7 +33,7 @@ def on_message(client, userdata, msg):
 
 
 def on_connect(client, userdata, flags, rc):
-    for i in RESPONSES:
+    for i in subscribeTopics:
         client.subscribe(i)
 
 client.on_connect = on_connect
@@ -67,10 +69,14 @@ def bookingUpdates():
 
 
 def isBooked() -> bool:
-    REQUEST = "request/bookings"
+    with "request/bookings" as REQUEST:
+        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+    
     RESPONSE = "response/bookings"
+    if RESPONSE not in subscribeTopics:
+        subscribeTopics.append(RESPONSE)
+
     # Publish Request
-    client.publish(REQUEST, "INSERT REQUEST STRING HERE")
     time.sleep(2) # Wait for response
     
     if (response[RESPONSE][-1].lower() == "false"):
@@ -83,10 +89,12 @@ def isBooked() -> bool:
 def getSchedule() -> list[list[str]]:
     REQUEST = "request/bookings"
     RESPONSE = "response/bookings"
+    if RESPONSE not in subscribeTopics:
+        subscribeTopics.append(RESPONSE)
 
     client.publish(REQUEST, "INSERT REQUEST STRING HERE")
     time.sleep(2)
-
+    response[RESPONSE][-1] # response result
     
     return None
 
