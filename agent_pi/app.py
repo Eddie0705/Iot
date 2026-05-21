@@ -40,7 +40,8 @@ def register_page():
             "action": "register",
             "full_name": full_name,
             "email": email,
-            "password": password
+            "password": password,
+            "rmit_id": rmit_id
         }
 
         response = send_request(message)
