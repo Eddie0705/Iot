@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from client import send_request
 
 app = Flask(__name__)
@@ -9,20 +9,23 @@ def home():
     return render_template("login.html")
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    email = request.form.get("email")
-    password = request.form.get("password")
+    if request.method == "POST":
+        request_data = {
+            "action": "login",
+            "email": request.form["email"],
+            "password": request.form["password"]
+        }
 
-    message = {
-        "action": "login",
-        "email": email,
-        "password": password
-    }
+        response = send_request(request_data)
 
-    response = send_request(message)
+        if response.get("status") == "success":
+            return redirect(url_for("dashboard"))
 
-    return render_template("login.html", response=response)
+        return render_template("login.html", response=response)
+
+    return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register_page():
@@ -31,6 +34,7 @@ def register_page():
         full_name = request.form.get("full_name")
         email = request.form.get("email")
         password = request.form.get("password")
+        rmit_id = request.form.get("rmit_id")
 
         message = {
             "action": "register",
@@ -141,6 +145,10 @@ def room_use():
 
     ## open room use page
     return render_template("room_use.html")
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
 
 
 if __name__ == "__main__":
