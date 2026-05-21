@@ -34,7 +34,6 @@ def login_user(email, password):
             "success": False,
             "message": "Invalid email or password"
         }
-        
 
     except MySQLdb.Error as e:
         return {
