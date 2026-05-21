@@ -1,6 +1,8 @@
 import socket
 import json
 from db_setup import get_connection
+import random
+import string
 
 HOST = "0.0.0.0"
 PORT = 5050
@@ -123,10 +125,49 @@ def handle_request(request):
             }
 
     if action == "book_room":
-        return {
-            "status": "success",
-            "message": "Booking request received by Master Pi"
-        }
+        try:
+            token = "TOKEN-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+            room_id = request.get("room_id")
+            date = request.get("date")
+            start_time = request.get("start_time")
+            end_time = request.get("end_time")
+
+            start_datetime = f"{date} {start_time}:00"
+            end_datetime = f"{date} {end_time}:00"
+
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                INSERT INTO bookings (user_id, room_id, start_time, end_time, status, token, token_used)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                4,
+                room_id,
+                start_datetime,
+                end_datetime,
+                "confirmed",
+                token,
+                False
+            ))
+
+            con.commit()
+            booking_id = cur.lastrowid
+            con.close()
+
+            return {
+                "status": "success",
+                "message": "Room booked successfully",
+                "booking_id": booking_id,
+                "token": token
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e)
+            }
 
     if action == "cancel_booking":
         return {

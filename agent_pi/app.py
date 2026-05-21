@@ -73,15 +73,12 @@ def search_page():
 @app.route("/book", methods=["GET", "POST"])
 def book_room():
 
-    # when user submits booking form
     if request.method == "POST":
-
         room_id = request.form["room_id"]
         date = request.form["date"]
         start_time = request.form["start_time"]
         end_time = request.form["end_time"]
 
-        # create request message for Master Pi
         request_data = {
             "action": "book_room",
             "room_id": room_id,
@@ -90,12 +87,10 @@ def book_room():
             "end_time": end_time
         }
 
-        # send request through socket
         response = send_request(request_data)
 
         return render_template("book.html", response=response)
 
-    # open booking page
     return render_template("book.html")
 
 @app.route("/cancel", methods=["GET", "POST"])
