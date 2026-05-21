@@ -87,6 +87,14 @@ def reports():
     return render_template("reports.html", fault_reports=rows)
 
 
+@app.route("/generate_report")
+def generate_report():
+    from report_generator import generate_booking_frequency_chart, generate_booking_status_chart
+    generate_booking_frequency_chart()
+    generate_booking_status_chart()
+    return redirect("/reports")
+
+
 @app.route("/confirm_fault/<int:report_id>", methods=["POST"])
 def confirm_fault(report_id):
     from database import resolve_fault_report, get_fault_report_room

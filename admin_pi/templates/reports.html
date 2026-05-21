@@ -1,42 +1,39 @@
 <h2>Fault Reports</h2>
 
 <table border="1">
-
     <tr>
+        <th>ID</th>
         <th>Room</th>
-        <th>Issue</th>
+        <th>Reported By</th>
+        <th>Description</th>
         <th>Status</th>
         <th>Decision</th>
     </tr>
-
     {% for report in fault_reports %}
-
     <tr>
-
-        <td>{{ report.room }}</td>
-
-        <td>{{ report.issue }}</td>
-
-        <td>{{ report.status }}</td>
-
+        <td>{{ report[0] }}</td>
+        <td>{{ report[1] }}</td>
+        <td>{{ report[2] }}</td>
+        <td>{{ report[3] }}</td>
+        <td>{{ report[4] }}</td>
         <td>
-
-            {% if report.status == "Fault" %}
-
-                <a href="/confirm_fault/{{ report.room }}">
-                    Confirm Fault
-                </a>
-
+            {% if report[4] == 'pending' %}
+                <form action="/confirm_fault/{{ report[0] }}" method="POST" style="display:inline">
+                    <button type="submit">Confirm Fault</button>
+                </form>
             {% else %}
-
-                Maintenance Requested
-
+                {{ report[4] }}
             {% endif %}
-
         </td>
-
     </tr>
-
     {% endfor %}
-
 </table>
+
+<h2>Usage Reports</h2>
+
+<a href="/generate_report">Generate Reports</a>
+
+<br><br>
+
+<img src="/static/booking_frequency.png" alt="Booking Frequency" onerror="this.style.display='none'">
+<img src="/static/booking_status.png" alt="Booking Status" onerror="this.style.display='none'">
