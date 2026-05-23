@@ -5,10 +5,10 @@ import time
 # from ..common.config import *
 import paho.mqtt.client as mqtt
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 
-s = SenseHat()
+# s = SenseHat()
 client = mqtt.Client()
 KEEPALIVE = 60 # how long to keep the connection Alive in seconds
 
@@ -18,14 +18,18 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    # render homepage Header basically
+    # render homepage basically
     return render_template("base.html")
 
-@app.route('/weather')
-def weatherUpdates():
-    # Renders index.html from the templates folder
-    humidity, pressure, temperature = getStats()
-    return render_template('weather.html', humidity=humidity, pressure=pressure, temperature=temperature)
+# for javacript refreshes
+@app.route("/weather-data")
+def weatherData():
+    humidity, pressure, temperature = (67, 1, 3)  # getStats()
+    return jsonify(
+        {"humidity": humidity, "pressure": pressure, "temperature": temperature}
+    )
+
+
 
 @app.route('/booking')
 def bookingStatusNow():
@@ -34,8 +38,28 @@ def bookingStatusNow():
         return render_template('booking.html', BookedNow="myb 5 no space")
     else: return render_template('booking.html', BookedNow="Slide thru Slime!")
 
-#commented out because sense-emu is kinda broken rn though no reason it wouldnt work
+@app.route("/booking-data")
+def bookingUpdates():
+     # define this function
+    if (isBooked()):
+        return jsonify(
+            {"status": "Yea this room is Booked right now, Sorry lol"}
+        )
+    else:
+        return jsonify(
+            {"status": "Slide through, this room is free"}
+        )
 
+
+def isBooked() -> bool:
+    #some function to determine if room is booked rn, figure out based on Database
+
+    return False
+
+
+app.run(debug=True)
+
+#commented out because sense-emu is kinda broken rn though no reason it wouldnt work on a real pi remember to change import
 def getStats() -> tuple[float, float, float]:
     humidity = s.get_humidity()
     pressure = s.get_pressure()
@@ -44,6 +68,6 @@ def getStats() -> tuple[float, float, float]:
     return (humidity, pressure, temperature)
 
 
-app.run(debug=True)
+
 
 

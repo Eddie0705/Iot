@@ -1,9 +1,34 @@
 import socket
 import json
+# schedule of user booking (need time of booking) + confirmation of check in 
+from database import (
+    login_user,
+    get_booking_logs,
+    get_usage_logs,
+    get_booking_history,
+    get_all_room_status,
+    update_room_status,
+    get_all_users,
+    get_fault_reports,
+    resolve_fault_report,
+    create_security_staff,
+    update_user,
+    delete_user,
+    get_user_by_id,
+    register_user,
+    search_room,
+    book_room,
+    cancel_booking,
+    use_room,
+    return_room
+)
 
 HOST = "0.0.0.0"
 PORT = 5050
 
+
+def combine_datetime(date, time):
+    return f"{date} {time}:00"
 
 def handle_request(request):
     action = request.get("action")
@@ -15,47 +40,71 @@ def handle_request(request):
         }
 
     if action == "login":
-        return {
-            "status": "success",
-            "message": "Login request received by Master Pi"
-        }
-
+        return login_user(
+            request.get("email"),
+            request.get("password")
+        )
     if action == "register":
-        return {
-            "status": "success",
-            "message": "Registration request received by Master Pi"
-        }
+        return register_user(
+            request.get("email"),
+            request.get("password"),
+            request.get("full_name"),
+            request.get("rmit_id")
+        )
 
     if action == "search_room":
-        return {
-            "status": "success",
-            "message": "Room search request received by Master Pi"
-        }
-    
+        start_datetime = combine_datetime(
+            request.get("date"),
+            request.get("start_time")
+        )
+
+        end_datetime = combine_datetime(
+            request.get("date"),
+            request.get("end_time")
+        )
+
+        return search_room(
+            start_datetime,
+            end_datetime
+        )
+
     if action == "book_room":
-        return {
-            "status": "success",
-            "message": "Booking request received by Master Pi"
-        }
+        start_datetime = combine_datetime(
+            request.get("date"),
+            request.get("start_time")
+        )
+
+        end_datetime = combine_datetime(
+            request.get("date"),
+            request.get("end_time")
+        )
+
+        return book_room(
+            request.get("room_id"),
+            start_datetime,
+            end_datetime
+        )
 
     if action == "cancel_booking":
-        return {
-            "status": "success",
-            "message": "Booking cancellation request received by Master Pi"
-        }
+        return cancel_booking(
+            request.get("user_id"),
+            request.get("booking_id")
+        )
 
     if action == "use_room":
-        return {
-            "status": "success",
-            "message": "Use room request received by Master Pi"
-        }
+        return use_room(
+            request.get("booking_id"),
+            request.get("room_id"),
+            request.get("token")
+        )
 
     if action == "return_room":
-        return {
-            "status": "success",
-            "message": "Return room request received by Master Pi"
-        }        
+        return return_room(
+            request.get("booking_id"),
+            request.get("room_id")
+        )
         
+    else:
         return {
             "status": "error",
             "message": "Unknown action"
