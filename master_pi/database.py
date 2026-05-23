@@ -440,7 +440,7 @@ def cancel_booking(booking_id, user_id=1):
             con.close()
 
 
-def use_room(booking_id, room_id, user_id=1):
+def use_room(booking_id, room_id, token, user_id=1):
     con = None
 
     try:
@@ -452,16 +452,17 @@ def use_room(booking_id, room_id, user_id=1):
             FROM bookings
             WHERE booking_id = %s
             AND room_id = %s
+            AND token = %s
             AND status = 'Booked'
             AND token_used = FALSE
-        """, (booking_id, room_id))
+        """, (booking_id, room_id, token))
 
         booking = cur.fetchone()
 
         if not booking:
             return {
                 "status": "error",
-                "message": "Booking not found, already used, or not available for check-in"
+                "message": "Invalid token, booking not found, or token already used"
             }
 
         cur.execute("""

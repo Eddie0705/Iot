@@ -1,6 +1,6 @@
 import socket
 import json
-# schedule of user booking (need time of booking) + confirmation of check in
+# schedule of user booking (need time of booking) + confirmation of check in 
 from database import (
     login_user,
     get_booking_logs,
@@ -44,6 +44,13 @@ def handle_request(request):
             request.get("email"),
             request.get("password")
         )
+    if action == "register":
+        return register_user(
+            request.get("email"),
+            request.get("password"),
+            request.get("full_name"),
+            request.get("rmit_id")
+        )
 
     if action == "search_room":
         start_datetime = combine_datetime(
@@ -86,14 +93,15 @@ def handle_request(request):
 
     if action == "use_room":
         return use_room(
-            request.get("user_id"),
+            request.get("booking_id"),
+            request.get("room_id"),
             request.get("token")
         )
 
     if action == "return_room":
         return return_room(
-            request.get("user_id"),
-            request.get("room_id") 
+            request.get("booking_id"),
+            request.get("room_id")
         )
         
     else:
