@@ -3,34 +3,52 @@
 <head>
     <title>Book Room</title>
 </head>
-
 <body>
 
     <h1>Book a Room</h1>
 
     <form method="POST" action="/book">
 
-        <label>Room ID:</label><br>
-        <input type="text" name="room_id" required><br><br>
+        <p>
+            <label>Room ID:</label><br>
+            <input type="text" name="room_id" required>
+        </p>
 
-        <label>Date:</label><br>
-        <input type="date" name="date" required><br><br>
+        <p>
+            <label>Date:</label><br>
+            <input type="date" name="date" required>
+        </p>
 
-        <label>Start Time:</label><br>
-        <input type="time" name="start_time" required><br><br>
+        <p>
+            <label>Start Time:</label><br>
+            <input type="time" name="start_time" required>
+        </p>
 
-        <label>End Time:</label><br>
-        <input type="time" name="end_time" required><br><br>
+        <p>
+            <label>End Time:</label><br>
+            <input type="time" name="end_time" required>
+        </p>
 
         <button type="submit">Book Room</button>
 
     </form>
 
     {% if response %}
-        <h2>Master Pi Response</h2>
+        <h3>Master Pi Response</h3>
         <p>Status: {{ response.status }}</p>
         <p>Message: {{ response.message }}</p>
+
+        {% if response.token %}
+            <h2>Your Booking Token: {{ response.token }}</h2>
+            <p>Please save this token. It is required for room access.</p>
+        {% endif %}
     {% endif %}
+
+    <p>
+     <a href="/dashboard">
+        <button type="button">Back to Dashboard</button>
+     </a>
+   </p>
 
 </body>
 </html>

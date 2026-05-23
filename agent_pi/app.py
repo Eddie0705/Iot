@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from client import send_request
 
 app = Flask(__name__)
@@ -9,20 +9,23 @@ def home():
     return render_template("login.html")
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    email = request.form.get("email")
-    password = request.form.get("password")
+    if request.method == "POST":
+        request_data = {
+            "action": "login",
+            "email": request.form["email"],
+            "password": request.form["password"]
+        }
 
-    message = {
-        "action": "login",
-        "email": email,
-        "password": password
-    }
+        response = send_request(request_data)
 
-    response = send_request(message)
+        if response.get("status") == "success":
+            return redirect(url_for("dashboard"))
 
-    return render_template("login.html", response=response)
+        return render_template("login.html", response=response)
+
+    return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register_page():
@@ -31,12 +34,14 @@ def register_page():
         full_name = request.form.get("full_name")
         email = request.form.get("email")
         password = request.form.get("password")
+        rmit_id = request.form.get("rmit_id")
 
         message = {
             "action": "register",
             "full_name": full_name,
             "email": email,
-            "password": password
+            "password": password,
+            "rmit_id": rmit_id
         }
 
         response = send_request(message)
@@ -68,15 +73,12 @@ def search_page():
 @app.route("/book", methods=["GET", "POST"])
 def book_room():
 
-    # when user submits booking form
     if request.method == "POST":
-
         room_id = request.form["room_id"]
         date = request.form["date"]
         start_time = request.form["start_time"]
         end_time = request.form["end_time"]
 
-        # create request message for Master Pi
         request_data = {
             "action": "book_room",
             "room_id": room_id,
@@ -85,12 +87,10 @@ def book_room():
             "end_time": end_time
         }
 
-        # send request through socket
         response = send_request(request_data)
 
         return render_template("book.html", response=response)
 
-    # open booking page
     return render_template("book.html")
 
 @app.route("/cancel", methods=["GET", "POST"])
@@ -141,6 +141,10 @@ def room_use():
 
     ## open room use page
     return render_template("room_use.html")
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
 
 
 if __name__ == "__main__":

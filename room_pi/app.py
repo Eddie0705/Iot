@@ -10,9 +10,35 @@ from flask import Flask, render_template, request, jsonify
 
 # s = SenseHat()
 client = mqtt.Client()
-KEEPALIVE = 60 # how long to keep the connection Alive in seconds
+BROKER = "INSERT.IP" # FIND THAT IP
+subscribeTopics = [
+    # empty cos we add the responses as we go on
+    # reponses.append("reponse/XXXX")
+    # on client connect to broker appends all responses and listens to them
+]
+client.connect(BROKER)
+client.loop_start()
+response = {}
 
-#client.connect(MASTER_IP, MASTER_PORT, KEEPALIVE)
+
+def on_message(client, userdata, msg):
+    global response
+    topic = msg.topic
+    message = msg.payload.decode()
+
+    if topic not in response:
+        response[topic] = []
+
+    response[topic].append(message) # query topic and most recent array for newest values
+
+
+def on_connect(client, userdata, flags, rc):
+    for i in subscribeTopics:
+        client.subscribe(i)
+
+client.on_connect = on_connect
+client.on_message = on_message
+
 
 app = Flask(__name__)
 
@@ -29,15 +55,6 @@ def weatherData():
         {"humidity": humidity, "pressure": pressure, "temperature": temperature}
     )
 
-
-
-@app.route('/booking')
-def bookingStatusNow():
-    isBookedNow: bool = False # source this function elsewhere
-    if (isBookedNow):
-        return render_template('booking.html', BookedNow="myb 5 no space")
-    else: return render_template('booking.html', BookedNow="Slide thru Slime!")
-
 @app.route("/booking-data")
 def bookingUpdates():
      # define this function
@@ -52,10 +69,34 @@ def bookingUpdates():
 
 
 def isBooked() -> bool:
-    #some function to determine if room is booked rn, figure out based on Database
+    with "request/bookings" as REQUEST:
+        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+    
+    RESPONSE = "response/bookings"
+    if RESPONSE not in subscribeTopics:
+        subscribeTopics.append(RESPONSE)
 
-    return False
+    # Publish Request
+    time.sleep(2) # Wait for response
+    
+    if (response[RESPONSE][-1].lower() == "false"):
+        return False
+    elif (response[RESPONSE][-1].lower() == "true"):
+        return True
+    else:
+        raise TypeError(f"This topic does not return a valid result, {RESPONSE=}, {response[RESPONSE][-1].lower()=}")
 
+def getSchedule() -> list[list[str]]:
+    REQUEST = "request/bookings"
+    RESPONSE = "response/bookings"
+    if RESPONSE not in subscribeTopics:
+        subscribeTopics.append(RESPONSE)
+
+    client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+    time.sleep(2)
+    response[RESPONSE][-1] # response result
+    
+    return None
 
 app.run(debug=True)
 
@@ -66,6 +107,7 @@ def getStats() -> tuple[float, float, float]:
     temperature = s.get_temperature()
 
     return (humidity, pressure, temperature)
+
 
 
 

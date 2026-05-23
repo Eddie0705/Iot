@@ -115,8 +115,12 @@ def start_server():
     ## create TCP socket server using IPv4 addresses/socket.AF_INET and TCP protocol/socket.SOCK_STREAM
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    ## run server on 0.0.0.0 and port 5000
+    ## allow the socket to reuse the port quickly after restarting the server
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    ## run server on 0.0.0.0 and port 5050
     server_socket.bind((HOST, PORT))
+
     ## start listening for client to connect
     server_socket.listen()
 
@@ -130,7 +134,7 @@ def start_server():
         client_socket, client_address = server_socket.accept()
         print(f"Connection from {client_address}")
 
-        ## receive data from client up to 4065 bytes and then decode it from bytes to string/normal text
+        ## receive data from client up to 4096 bytes and then decode it from bytes to string/normal text
         data = client_socket.recv(4096).decode()
 
         try:

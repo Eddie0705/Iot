@@ -11,7 +11,7 @@ from common.config import MASTER_HOST, MASTER_PORT
 def send_request(message):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((MASTER_HOST, MASTER_PORT))
+            client.connect((MASTER_HOST, int(MASTER_PORT)))
             client.sendall(json.dumps(message).encode("utf-8"))
 
             response = client.recv(4096).decode("utf-8")
