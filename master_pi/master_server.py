@@ -204,22 +204,85 @@ def handle_request(request):
                 "message": str(e)
             }
 
+
     if action == "use_room":
-        return {
-            "status": "success",
-            "message": "Use room request received by Master Pi"
-        }
+        try:
+            booking_id = request.get("booking_id")
+            room_id = request.get("room_id")
+
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                UPDATE bookings
+                SET status = 'in_use',
+                    token_used = TRUE
+                WHERE booking_id = %s
+                AND room_id = %s
+                AND status = 'confirmed'
+                AND token_used = FALSE
+            """, (booking_id, room_id))
+
+            con.commit()
+
+            if cur.rowcount > 0:
+                response = {
+                    "status": "success",
+                    "message": f"Room {room_id} is now in use"
+                }
+            else:
+                response = {
+                    "status": "error",
+                    "message": "Booking cannot be used. It may be cancelled, completed, already in use, or invalid."
+                }
+
+            con.close()
+            return response
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e)
+            }
+
 
     if action == "return_room":
-        return {
-            "status": "success",
-            "message": "Return room request received by Master Pi"
-        }
+        try:
+            booking_id = request.get("booking_id")
+            room_id = request.get("room_id")
 
-    return {
-        "status": "error",
-        "message": "Unknown action"
-    }
+            con = get_connection()
+            cur = con.cursor()
+
+            cur.execute("""
+                UPDATE bookings
+                SET status = 'completed'
+                WHERE booking_id = %s
+                AND room_id = %s
+                AND status = 'in_use'
+            """, (booking_id, room_id))
+
+            con.commit()
+
+            if cur.rowcount > 0:
+                response = {
+                    "status": "success",
+                    "message": f"Room {room_id} has been returned"
+                }
+            else:
+                response = {
+                    "status": "error",
+                    "message": "Room cannot be returned. Booking is not currently in use or invalid."
+                }
+
+            con.close()
+            return response
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": str(e)
+            }
 
 
 def start_server():
