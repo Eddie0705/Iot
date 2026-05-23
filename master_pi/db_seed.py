@@ -51,7 +51,7 @@ try:
     cur.execute("""
         INSERT INTO fault_reports (room_id, reported_by, description, status) VALUES
         (3, 4, 'Projector not working and AC broken', 'pending'),
-        (1, 5, 'Lights flickering', 'reviewed')
+        (1, 5, 'Lights flickering', 'pending')
     """)
 
     con.commit()

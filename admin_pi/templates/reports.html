@@ -1,42 +1,8 @@
-<h2>Fault Reports</h2>
+<h2>Usage Reports</h2>
 
-<table border="1">
+<a href="/generate_report">Generate Reports</a>
 
-    <tr>
-        <th>Room</th>
-        <th>Issue</th>
-        <th>Status</th>
-        <th>Decision</th>
-    </tr>
+<br><br>
 
-    {% for report in fault_reports %}
-
-    <tr>
-
-        <td>{{ report.room }}</td>
-
-        <td>{{ report.issue }}</td>
-
-        <td>{{ report.status }}</td>
-
-        <td>
-
-            {% if report.status == "Fault" %}
-
-                <a href="/confirm_fault/{{ report.room }}">
-                    Confirm Fault
-                </a>
-
-            {% else %}
-
-                Maintenance Requested
-
-            {% endif %}
-
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
+<img src="/static/booking_frequency.png" alt="Booking Frequency" onerror="this.style.display='none'">
+<img src="/static/booking_status.png" alt="Booking Status" onerror="this.style.display='none'">

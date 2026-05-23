@@ -31,3 +31,34 @@
     </tr>
     {% endfor %}
 </table>
+
+<h2>Fault Reports</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Room</th>
+        <th>Reported By</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    {% for report in fault_reports %}
+    <tr>
+        <td>{{ report[0] }}</td>
+        <td>{{ report[1] }}</td>
+        <td>{{ report[2] }}</td>
+        <td>{{ report[3] }}</td>
+        <td>{{ report[4] }}</td>
+        <td>
+            {% if report[4] == 'pending' %}
+                <form action="/confirm_fault/{{ report[0] }}" method="POST" style="display:inline">
+                    <button type="submit">Confirm Fault</button>
+                </form>
+            {% else %}
+                {{ report[4] }}
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>

@@ -82,25 +82,36 @@ def delete_user(user_id):
 
 @app.route("/reports")
 def reports():
-    from database import get_fault_reports
-    rows = get_fault_reports()
-    return render_template("reports.html", fault_reports=rows)
+    return render_template("reports.html")
+
+
+@app.route("/generate_report")
+def generate_report():
+    from report_generator import generate_booking_frequency_chart, generate_booking_status_chart
+    generate_booking_frequency_chart()
+    generate_booking_status_chart()
+    return redirect("/reports")
 
 
 @app.route("/confirm_fault/<int:report_id>", methods=["POST"])
 def confirm_fault(report_id):
     from database import resolve_fault_report, get_fault_report_room
     room_name = get_fault_report_room(report_id)
-    resolve_fault_report(report_id)
-    update_room_status(room_name, "maintenance")
-    publish_announcement(f"Room {room_name} down, waiting for maintenance")
-    return redirect("/reports")
+    print(f"confirm_fault: report_id={report_id}, room_name={room_name}")
+    if room_name:
+        resolve_fault_report(report_id)
+        update_room_status(room_name, "fault")
+        print(f"confirm_fault: updated {room_name} to fault")
+        publish_announcement(f"Room {room_name} down, waiting for maintenance")
+    return redirect("/room_status")
 
 
 @app.route("/room_status")
 def room_status():
+    from database import get_fault_reports
     rows = get_all_room_status()
-    return render_template("room_status.html", room_status=rows)
+    fault_rows = get_fault_reports()
+    return render_template("room_status.html", room_status=rows, fault_reports=fault_rows)
 
 
 @app.route("/update_room", methods=["POST"])
