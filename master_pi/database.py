@@ -1,5 +1,6 @@
 import MySQLdb
 from db_setup import get_connection
+import secrets
 
 def login_user(email, password):
     con = None
@@ -201,3 +202,356 @@ def get_user_by_id(user_id):
     row = cur.fetchone()
     con.close()
     return row
+def log_action(user_id, action, details):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            INSERT INTO system_logs (user_id, action, details)
+            VALUES (%s, %s, %s)
+        """, (user_id, action, details))
+
+        con.commit()
+
+    except MySQLdb.Error as e:
+        print(f"Logging error: {e}")
+
+    finally:
+        if con:
+            con.close()
+
+
+def register_user(email, password, full_name, rmit_id=None):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        # app.py does not send rmit_id, so generate one for now
+        if rmit_id is None or rmit_id == "":
+            rmit_id = "TEMP-" + secrets.token_hex(4)
+
+        cur.execute("""
+            INSERT INTO users (email, password, full_name, rmit_id, role)
+            VALUES (%s, %s, %s, %s, 'user')
+        """, (email, password, full_name, rmit_id))
+
+        con.commit()
+        user_id = cur.lastrowid
+
+        log_action(user_id, "REGISTER", f"New user registered: {email}")
+
+        return {
+            "status": "success",
+            "message": "Registration successful",
+            "user_id": user_id
+        }
+
+    except MySQLdb.IntegrityError:
+        return {
+            "status": "error",
+            "message": "Email or RMIT ID already exists"
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
+
+
+def search_room(start_time, end_time):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT room_id, room_name, location, capacity, status
+            FROM rooms
+            WHERE status = 'Available'
+            AND room_id NOT IN (
+                SELECT room_id
+                FROM bookings
+                WHERE status IN ('Booked', 'Checked In')
+                AND %s < end_time
+                AND %s > start_time
+            )
+        """, (start_time, end_time))
+
+        rows = cur.fetchall()
+
+        rooms = []
+
+        for row in rows:
+            rooms.append({
+                "room_id": row[0],
+                "room_name": row[1],
+                "location": row[2],
+                "capacity": row[3],
+                "status": row[4]
+            })
+
+        return {
+            "status": "success",
+            "message": "Available rooms retrieved",
+            "rooms": rooms
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
+
+
+def book_room(room_id, start_time, end_time, user_id=1):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT status
+            FROM rooms
+            WHERE room_id = %s
+        """, (room_id,))
+
+        room = cur.fetchone()
+
+        if not room:
+            return {
+                "status": "error",
+                "message": "Room not found"
+            }
+
+        if room[0] != "Available":
+            return {
+                "status": "error",
+                "message": f"Room is currently {room[0]}"
+            }
+
+        cur.execute("""
+            SELECT booking_id
+            FROM bookings
+            WHERE room_id = %s
+            AND status IN ('Booked', 'Checked In')
+            AND %s < end_time
+            AND %s > start_time
+        """, (room_id, start_time, end_time))
+
+        existing_booking = cur.fetchone()
+
+        if existing_booking:
+            return {
+                "status": "error",
+                "message": "Room is already booked during this time"
+            }
+
+        token = secrets.token_hex(4)
+
+        cur.execute("""
+            INSERT INTO bookings (user_id, room_id, start_time, end_time, status, token, token_used)
+            VALUES (%s, %s, %s, %s, 'Booked', %s, FALSE)
+        """, (user_id, room_id, start_time, end_time, token))
+
+        con.commit()
+        booking_id = cur.lastrowid
+
+        log_action(user_id, "BOOK_ROOM", f"Booking {booking_id} created for room {room_id}")
+
+        return {
+            "status": "success",
+            "message": "Room booked successfully",
+            "booking_id": booking_id,
+            "token": token
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
+
+
+def cancel_booking(booking_id, user_id=1):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT booking_id
+            FROM bookings
+            WHERE booking_id = %s
+            AND status = 'Booked'
+        """, (booking_id,))
+
+        booking = cur.fetchone()
+
+        if not booking:
+            return {
+                "status": "error",
+                "message": "Booking not found or cannot be cancelled"
+            }
+
+        cur.execute("""
+            UPDATE bookings
+            SET status = 'Cancelled'
+            WHERE booking_id = %s
+        """, (booking_id,))
+
+        con.commit()
+
+        log_action(user_id, "CANCEL_BOOKING", f"Booking {booking_id} cancelled")
+
+        return {
+            "status": "success",
+            "message": "Booking cancelled successfully"
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
+
+
+def use_room(booking_id, room_id, token, user_id=1):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT booking_id, room_id
+            FROM bookings
+            WHERE booking_id = %s
+            AND room_id = %s
+            AND token = %s
+            AND status = 'Booked'
+            AND token_used = FALSE
+        """, (booking_id, room_id, token))
+
+        booking = cur.fetchone()
+
+        if not booking:
+            return {
+                "status": "error",
+                "message": "Invalid token, booking not found, or token already used"
+            }
+
+        cur.execute("""
+            UPDATE bookings
+            SET status = 'Checked In',
+                token_used = TRUE
+            WHERE booking_id = %s
+        """, (booking_id,))
+
+        cur.execute("""
+            UPDATE rooms
+            SET status = 'In Use'
+            WHERE room_id = %s
+        """, (room_id,))
+
+        con.commit()
+
+        log_action(user_id, "USE_ROOM", f"User checked in to room {room_id}")
+
+        return {
+            "status": "success",
+            "message": "Room check-in successful",
+            "booking_id": booking_id,
+            "room_id": room_id
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
+
+
+def return_room(booking_id, room_id, user_id=1):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT booking_id
+            FROM bookings
+            WHERE booking_id = %s
+            AND room_id = %s
+            AND status = 'Checked In'
+        """, (booking_id, room_id))
+
+        booking = cur.fetchone()
+
+        if not booking:
+            return {
+                "status": "error",
+                "message": "No active checked-in booking found for this room"
+            }
+
+        cur.execute("""
+            UPDATE bookings
+            SET status = 'Completed'
+            WHERE booking_id = %s
+        """, (booking_id,))
+
+        cur.execute("""
+            UPDATE rooms
+            SET status = 'Available'
+            WHERE room_id = %s
+        """, (room_id,))
+
+        con.commit()
+
+        log_action(user_id, "RETURN_ROOM", f"User returned room {room_id}")
+
+        return {
+            "status": "success",
+            "message": "Room returned successfully",
+            "booking_id": booking_id,
+            "room_id": room_id
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
