@@ -23,7 +23,7 @@ def login_user(email, password):
 
         if user:
             return {
-                "success": True,
+                "status": "success",
                 "message": "Login successful",
                 "user_id": user[0],
                 "email": user[1],
@@ -32,13 +32,13 @@ def login_user(email, password):
             }
 
         return {
-            "success": False,
+            "status": "error",
             "message": "Invalid email or password"
         }
 
     except MySQLdb.Error as e:
         return {
-            "success": False,
+            "status": "error",
             "message": f"Database error: {e}"
         }
 
