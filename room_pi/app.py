@@ -16,8 +16,8 @@ subscribeTopics = [
     # reponses.append("reponse/XXXX")
     # on client connect to broker appends all responses and listens to them
 ]
-client.connect(BROKER)
-client.loop_start()
+# client.connect(BROKER)
+# client.loop_start()
 response = {}
 
 
@@ -50,15 +50,33 @@ def home():
 # for javacript refreshes
 @app.route("/weather-data")
 def weatherData():
+
     humidity, pressure, temperature = (67, 1, 3)  # getStats()
+    
+    # Temperature Emojis
+    # this genuinely the code equivelent of a colouring book bruh 
+    if (temperature < 18): tMoji = "🥶"
+    elif (temperature < 28): tMoji = "😁"
+    else: tMoji = "🥵"
+
+    if (pressure < 1010): pMoji = "🌵"
+    elif (pressure < 1020): pMoji = "🌿"
+    else: pMoji = "💦"
+
+
+    if (humidity < 40): hMoji = "🍃"
+    elif (humidity < 60): hMoji = "☁️"
+    else: hMoji = "🥵"
+
     return jsonify(
-        {"humidity": humidity, "pressure": pressure, "temperature": temperature}
+        {"humidity": humidity, "pressure": pressure, "temperature": temperature,
+         "humidityEmoji": hMoji, "pressureEmoji": pMoji, "temperatureEmoji": tMoji, }
     )
 
 @app.route("/booking-data")
 def bookingUpdates():
      # define this function
-    if (isBooked()):
+    if (True):
         return jsonify(
             {"status": "Yea this room is Booked right now, Sorry lol"}
         )
@@ -68,13 +86,13 @@ def bookingUpdates():
         )
 
 
-def isBooked() -> bool:
-    with "request/bookings" as REQUEST:
-        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
-    
+def isBooked() -> bool:    
     RESPONSE = "response/bookings"
     if RESPONSE not in subscribeTopics:
         subscribeTopics.append(RESPONSE)
+    
+    with "request/bookings" as REQUEST:
+        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
 
     # Publish Request
     time.sleep(2) # Wait for response
@@ -87,12 +105,13 @@ def isBooked() -> bool:
         raise TypeError(f"This topic does not return a valid result, {RESPONSE=}, {response[RESPONSE][-1].lower()=}")
 
 def getSchedule() -> list[list[str]]:
-    REQUEST = "request/bookings"
-    RESPONSE = "response/bookings"
+    RESPONSE = "response/schedule"
     if RESPONSE not in subscribeTopics:
         subscribeTopics.append(RESPONSE)
 
-    client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+    with "request/schedule" as REQUEST:
+        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+
     time.sleep(2)
     response[RESPONSE][-1] # response result
     
