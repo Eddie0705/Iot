@@ -7,8 +7,13 @@
 
 <h1>Admin Login</h1>
 
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
 <form action="/login" method="POST">
-    <input type="text" name="username" placeholder="Enter username">
+    <label>Email: <input type="email" name="email" required></label><br>
+    <label>Password: <input type="password" name="password" required></label><br>
     <button type="submit">Login</button>
 </form>
 
