@@ -39,6 +39,13 @@ def logout():
     return redirect("/")
 
 
+@app.route("/dashboard")
+def dashboard():
+    if not is_logged_in():
+        return redirect("/")
+    return render_template("dashboard.html", user=session.get("admin"))
+
+
 @app.route("/send_announcement", methods=["POST"])
 def send_announcement():
     message = request.form["message"]
