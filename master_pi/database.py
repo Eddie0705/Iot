@@ -525,13 +525,13 @@ def return_room(booking_id, room_id, user_id=1):
 
         cur.execute("""
             UPDATE bookings
-            SET status = 'Completed'
+            SET status = 'completed'
             WHERE booking_id = %s
         """, (booking_id,))
 
         cur.execute("""
             UPDATE rooms
-            SET status = 'Available'
+            SET status = 'available'
             WHERE room_id = %s
         """, (room_id,))
 
