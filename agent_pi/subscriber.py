@@ -1,16 +1,14 @@
 import paho.mqtt.client as mqtt
 
-BROKER = "broker.hivemq.com"
+BROKER = "10.132.66.24"
 PORT = 1883
-TOPIC = "group37/alerts"
-
-
 ## this runs when Agent Pi connects to MQTT broker
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Agent Pi connected to MQTT broker")
-        client.subscribe(TOPIC)
-        print(f"Subscribed to topic: {TOPIC}")
+        client.subscribe("admin/announcements")
+        client.subscribe("rooms/+/status")
+        print("Subscribed to admin/announcements and rooms/+/status")
     else:
         print("Connection failed")
 
