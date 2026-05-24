@@ -87,8 +87,8 @@ def handle_request(request):
 
     if action == "cancel_booking":
         return cancel_booking(
-            request.get("user_id"),
-            request.get("booking_id")
+            request.get("booking_id"),
+            request.get("user_id")
         )
 
     if action == "use_room":
