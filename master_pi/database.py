@@ -339,7 +339,7 @@ def book_room(room_id, start_time, end_time, user_id=1):
                 "message": "Room not found"
             }
 
-        if room[0] != "Available":
+        if room[0] != "available":
             return {
                 "status": "error",
                 "message": f"Room is currently {room[0]}"
