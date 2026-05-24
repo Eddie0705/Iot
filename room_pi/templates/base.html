@@ -24,9 +24,9 @@
     </div>
     <div class="Weather">
         <h1>Weather Stats</h1>
-        <p>Temperature: <span id="temp">{{ temperature }}</span>°C</p>
-        <p>Humidity: <span id="humid">{{ humidity }}</span>%</p>
-        <p>Pressure: <span id="press">{{ pressure }}</span> hPa</p>
+        <p>Temperature: <span id="temp">{{ temperature }}</span>°C <span id="tempM">{{temperatureEmoji}}</span></p>
+        <p>Humidity: <span id="humid">{{ humidity }}</span>% <span id="humidM">{{humidityEmoji}}</span></p>
+        <p>Pressure: <span id="press">{{ pressure }}</span> <span id="pressM">hPa {{pressureEmoji}}</span></p>
 
     <script>
         function fetchWeather() {
@@ -38,6 +38,10 @@
                     document.getElementById('temp').innerText = data.temperature;
                     document.getElementById('humid').innerText = data.humidity;
                     document.getElementById('press').innerText = data.pressure;
+                    
+                    document.getElementById('tempM').innerText = data.temperatureEmoji;
+                    document.getElementById('humidM').innerText = data.humidityEmoji;
+                    document.getElementById('pressM').innerText = data.pressureEmoji;
                 })
                 .catch(error => console.error('Error updating weather:', error));
         }
