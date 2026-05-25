@@ -21,10 +21,10 @@ try:
     # Rooms
     cur.execute("""
         INSERT INTO rooms (room_name, location, capacity, status) VALUES
-        ('A204', 'Building A, Level 2', 30, 'available'),
-        ('B301', 'Building B, Level 3', 50, 'available'),
-        ('C105', 'Building C, Level 1', 20, 'maintenance'),
-        ('D402', 'Building D, Level 4', 40, 'available')
+        ('A204', 'Building A, Level 2', 30, 'Available'),
+        ('B301', 'Building B, Level 3', 50, 'Available'),
+        ('C105', 'Building C, Level 1', 20, 'Maintenance'),
+        ('D402', 'Building D, Level 4', 40, 'Available')
     """)
 
     # Bookings

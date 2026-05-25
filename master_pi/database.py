@@ -99,16 +99,33 @@ def get_all_room_status():
     con.close()
     return rows
 
-def update_room_status(room_name, status):
+def update_room_status(room_name, new_status):
+    from room_state import RoomContext
     con = get_connection()
     cur = con.cursor()
-    cur.execute("""
-        UPDATE rooms
-        SET status = %s
-        WHERE room_name = %s
-    """, (status, room_name))
+
+    cur.execute("SELECT status FROM rooms WHERE room_name = %s", (room_name,))
+    row = cur.fetchone()
+
+    if not row:
+        con.close()
+        return {"status": "error", "message": "Room not found"}
+
+    try:
+        current_status = row[0].title()
+        context = RoomContext(current_status)
+        context.transition_to(new_status)
+    except ValueError as e:
+        con.close()
+        return {"status": "error", "message": str(e)}
+
+    cur.execute(
+        "UPDATE rooms SET status = %s WHERE room_name = %s",
+        (new_status, room_name)
+    )
     con.commit()
     con.close()
+    return {"status": "success", "message": f"Room status updated to {new_status}"}
 
 
 def get_all_users():
