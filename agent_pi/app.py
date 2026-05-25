@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import time
 from client import send_request
+from subscriber import start_subscriber, security_alerts
 
 app = Flask(__name__)
+start_subscriber()
 app.secret_key = "agent-pi-secret-key"
 
 try:
@@ -192,8 +194,15 @@ def security_room_status():
 
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
-
+    return render_template(
+        "dashboard.html",
+        security_alerts=security_alerts
+    )
+    
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
