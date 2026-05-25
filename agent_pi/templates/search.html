@@ -2,51 +2,56 @@
 <html>
 <head>
     <title>Search Rooms</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f7f2; margin: 0; }
+        .navbar { background-color: #1a6b3c; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .card h2 { margin-top: 0; color: #1a6b3c; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        button { padding: 10px 24px; background-color: #1a6b3c; color: white; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; }
+        button:hover { background-color: #145530; }
+        .message { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.95em; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th { background-color: #1a6b3c; color: white; padding: 12px 15px; text-align: left; }
+        td { padding: 10px 15px; border-bottom: 1px solid #eee; }
+        tr:last-child td { border-bottom: none; }
+    </style>
 </head>
-
 <body>
-
-    <h1>Search Available Rooms</h1>
-
-    <form method="POST" action="/search">
-
-        <p>
-            <label>Date</label><br>
+<div class="navbar">
+    <h2>Search Rooms</h2>
+    <a href="/dashboard">Back to Dashboard</a>
+</div>
+<div class="container">
+    <div class="card">
+        <h2>Find Available Rooms</h2>
+        {% if response and response.status != 'success' %}
+            <div class="message error">{{ response.message }}</div>
+        {% endif %}
+        <form method="POST" action="/search">
+            <label>Date</label>
             <input type="date" name="date" required>
-        </p>
-
-        <p>
-            <label>Start Time</label><br>
+            <label>Start Time</label>
             <input type="time" name="start_time" required>
-        </p>
-
-        <p>
-            <label>End Time</label><br>
+            <label>End Time</label>
             <input type="time" name="end_time" required>
-        </p>
-
-        <button type="submit">Search</button>
-
-    </form>
-
-    {% if response %}
-        <h3>Master Pi Response</h3>
-        <p>Status: {{ response.status }}</p>
-        <p>Message: {{ response.message }}</p>
-    {% endif %}
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
     {% if response and response.rooms %}
-        <h3>Available Rooms</h3>
-
-        <table border="1" cellpadding="8">
+    <div class="card">
+        <h2>Available Rooms</h2>
+        <table>
             <tr>
-                <th>Room ID</th>
-                <th>Room Name</th>
-                <th>Location</th>
-                <th>Capacity</th>
-                <th>Status</th>
+                <th>Room ID</th><th>Room Name</th><th>Location</th><th>Capacity</th><th>Status</th>
             </tr>
-
             {% for room in response.rooms %}
             <tr>
                 <td>{{ room.room_id }}</td>
@@ -57,14 +62,8 @@
             </tr>
             {% endfor %}
         </table>
+    </div>
     {% endif %}
-
-    <br><br>
-    <p>
-     <a href="/dashboard">
-        <button type="button">Back to Dashboard</button>
-     </a>
-   </p>
-
+</div>
 </body>
 </html>

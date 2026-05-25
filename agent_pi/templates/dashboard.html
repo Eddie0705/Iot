@@ -2,21 +2,126 @@
 <html>
 <head>
     <title>Agent Pi Dashboard</title>
-</head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
+        .navbar {
+            background-color: #1a6b3c;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #1a6b3c;
+            display: block;
+        }
+
+        .card:hover {
+            background-color: #1a6b3c;
+            color: white;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        .alert-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: none;
+        }
+    </style>
+</head>
 <body>
 
-    <h1>Agent Pi Dashboard</h1>
+<div class="navbar">
+    <h2>Classroom Booking System</h2>
+    <span>Welcome, {{ user }} | <a href="/login">Logout</a></span>
+</div>
 
-    <p>Welcome to the room booking system.</p>
+<div class="container">
 
-    <ul>
-        <li><a href="/search">Search Available Rooms</a></li>
-        <li><a href="/book">Book a Room</a></li>
-        <li><a href="/cancel">Cancel Booking</a></li>
-        <li><a href="/room-use">Use or Return Room</a></li>
-        <li><a href="/login">Logout</a></li>
-    </ul>
+    <div class="alert-box" id="alertBox">
+        <strong>Alert:</strong> <span id="alertMessage"></span>
+    </div>
+
+    <div class="welcome">
+        <h2>Dashboard</h2>
+        <p>Book and manage your classroom reservations.</p>
+    </div>
+
+    <div class="grid">
+        <a href="/search" class="card">
+            <h3>Search Rooms</h3>
+            <p>Find available rooms by date and time</p>
+        </a>
+        <a href="/book" class="card">
+            <h3>Book a Room</h3>
+            <p>Reserve a classroom for your session</p>
+        </a>
+        <a href="/cancel" class="card">
+            <h3>Cancel Booking</h3>
+            <p>Cancel an existing reservation</p>
+        </a>
+        <a href="/room-use" class="card">
+            <h3>Use / Return Room</h3>
+            <p>Check in or check out of a booked room</p>
+        </a>
+    </div>
+</div>
 
 </body>
 </html>

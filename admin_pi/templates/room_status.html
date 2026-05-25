@@ -1,66 +1,71 @@
-<a href="/dashboard">Back to Dashboard</a>
-
-<h2>Room Status</h2>
-
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Room</th>
-        <th>Location</th>
-        <th>Capacity</th>
-        <th>Status</th>
-        <th>Update</th>
-    </tr>
-    {% for room in room_status %}
-    <tr>
-        <td>{{ room[0] }}</td>
-        <td>{{ room[1] }}</td>
-        <td>{{ room[2] }}</td>
-        <td>{{ room[3] }}</td>
-        <td>{{ room[4] }}</td>
-        <td>
-            <form action="/update_room" method="POST">
-                <input type="hidden" name="room" value="{{ room[1] }}">
-                <select name="status">
-                    <option value="available">Available</option>
-                    <option value="in_use">In Use</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="fault">Fault</option>
-                </select>
-                <button type="submit">Update</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-<h2>Fault Reports</h2>
-
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Room</th>
-        <th>Reported By</th>
-        <th>Description</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-    {% for report in fault_reports %}
-    <tr>
-        <td>{{ report[0] }}</td>
-        <td>{{ report[1] }}</td>
-        <td>{{ report[2] }}</td>
-        <td>{{ report[3] }}</td>
-        <td>{{ report[4] }}</td>
-        <td>
-            {% if report[4] == 'pending' %}
-                <form action="/confirm_fault/{{ report[0] }}" method="POST" style="display:inline">
-                    <button type="submit">Confirm Fault</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Room Status</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; }
+        .navbar { background-color: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        th { background-color: #2c3e50; color: white; padding: 12px 15px; text-align: left; }
+        td { padding: 10px 15px; border-bottom: 1px solid #eee; }
+        tr:last-child td { border-bottom: none; }
+        select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; }
+        .btn { padding: 6px 14px; background-color: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-fault { background-color: #e74c3c; color: white; padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; }
+        h2 { color: #2c3e50; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h2>Room Status</h2>
+    <a href="/dashboard">Back to Dashboard</a>
+</div>
+<div class="container">
+    <h2>All Rooms</h2>
+    <table>
+        <tr><th>ID</th><th>Room</th><th>Location</th><th>Capacity</th><th>Status</th><th>Update</th></tr>
+        {% for room in room_status %}
+        <tr>
+            <td>{{ room[0] }}</td><td>{{ room[1] }}</td><td>{{ room[2] }}</td>
+            <td>{{ room[3] }}</td><td>{{ room[4] }}</td>
+            <td>
+                <form action="/update_room" method="POST" style="display:flex; gap:8px;">
+                    <input type="hidden" name="room" value="{{ room[1] }}">
+                    <select name="status">
+                        <option value="available">Available</option>
+                        <option value="in_use">In Use</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="fault">Fault</option>
+                    </select>
+                    <button type="submit" class="btn">Update</button>
                 </form>
-            {% else %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Fault Reports</h2>
+    <table>
+        <tr><th>ID</th><th>Room</th><th>Reported By</th><th>Description</th><th>Status</th><th>Action</th></tr>
+        {% for report in fault_reports %}
+        <tr>
+            <td>{{ report[0] }}</td><td>{{ report[1] }}</td><td>{{ report[2] }}</td>
+            <td>{{ report[3] }}</td><td>{{ report[4] }}</td>
+            <td>
+                {% if report[4] == 'pending' %}
+                <form action="/confirm_fault/{{ report[0] }}" method="POST">
+                    <button type="submit" class="btn-fault">Confirm Fault</button>
+                </form>
+                {% else %}
                 {{ report[4] }}
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>

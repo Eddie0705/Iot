@@ -1,23 +1,52 @@
-<a href="/users">Back to Users</a>
-
-<h2>Edit User</h2>
-
-<form action="/update_user/{{ user[0] }}" method="POST">
-    <label>Email: <input type="email" name="email" value="{{ user[1] }}" required></label><br>
-    <label>Full Name: <input type="text" name="full_name" value="{{ user[2] }}" required></label><br>
-    <label>Role:
-        <select name="role">
-            <option value="user" {% if user[4] == 'user' %}selected{% endif %}>User</option>
-            <option value="security" {% if user[4] == 'security' %}selected{% endif %}>Security</option>
-            <option value="admin" {% if user[4] == 'admin' %}selected{% endif %}>Admin</option>
-        </select>
-    </label><br>
-    <label>Status:
-        <select name="status">
-            <option value="active" {% if user[5] == 'active' %}selected{% endif %}>Active</option>
-            <option value="inactive" {% if user[5] == 'inactive' %}selected{% endif %}>Inactive</option>
-        </select>
-    </label><br>
-    <button type="submit">Save</button>
-    <a href="/users">Cancel</a>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit User</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; }
+        .navbar { background-color: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { max-width: 500px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h2 { margin-top: 0; color: #2c3e50; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        .actions { display: flex; gap: 10px; }
+        .btn-save { padding: 10px 20px; background-color: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        .btn-cancel { padding: 10px 20px; background-color: #ccc; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h2>Edit User</h2>
+    <a href="/users">Back to Users</a>
+</div>
+<div class="container">
+    <div class="card">
+        <h2>Edit User #{{ user[0] }}</h2>
+        <form action="/update_user/{{ user[0] }}" method="POST">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ user[1] }}" required>
+            <label>Full Name</label>
+            <input type="text" name="full_name" value="{{ user[2] }}" required>
+            <label>Role</label>
+            <select name="role">
+                <option value="user" {% if user[4] == 'user' %}selected{% endif %}>User</option>
+                <option value="security" {% if user[4] == 'security' %}selected{% endif %}>Security</option>
+                <option value="admin" {% if user[4] == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+            <label>Status</label>
+            <select name="status">
+                <option value="active" {% if user[5] == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if user[5] == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+            <div class="actions">
+                <button type="submit" class="btn-save">Save</button>
+                <a href="/users" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
