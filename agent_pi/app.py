@@ -1,7 +1,27 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+import time
 from client import send_request
 
 app = Flask(__name__)
+app.secret_key = "agent-pi-secret-key"
+
+try:
+    from sense_hat import SenseHat
+    sense = SenseHat()
+except Exception:
+    sense = None
+
+
+def show_fault_warning():
+    if sense is None:
+        print("FAULT WARNING: Sense HAT not available")
+        return
+
+    for _ in range(5):
+        sense.clear(255, 0, 0)
+        time.sleep(0.4)
+        sense.clear()
+        time.sleep(0.4)
 
 
 @app.route("/")
@@ -21,6 +41,8 @@ def login():
         response = send_request(request_data)
 
         if response.get("status") == "success":
+            session["user_id"] = response.get("user_id")
+            session["role"] = response.get("role")
             return redirect(url_for("dashboard"))
 
         return render_template("login.html", response=response)
@@ -143,6 +165,30 @@ def room_use():
 
     ## open room use page
     return render_template("room_use.html")
+
+@app.route("/security-room-status", methods=["GET", "POST"])
+def security_room_status():
+
+    if session.get("role") != "security":
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        new_status = request.form["status"]
+
+        request_data = {
+            "action": "update_room_status",
+            "room_id": request.form["room_id"],
+            "status": new_status
+        }
+
+        response = send_request(request_data)
+
+        if response.get("status") == "success" and new_status == "fault":
+            show_fault_warning()
+
+        return render_template("security_room_status.html", response=response)
+
+    return render_template("security_room_status.html")
 
 @app.route("/dashboard")
 def dashboard():

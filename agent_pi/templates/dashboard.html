@@ -104,22 +104,34 @@
     </div>
 
     <div class="grid">
+
         <a href="/search" class="card">
             <h3>Search Rooms</h3>
             <p>Find available rooms by date and time</p>
         </a>
+
         <a href="/book" class="card">
             <h3>Book a Room</h3>
             <p>Reserve a classroom for your session</p>
         </a>
+
         <a href="/cancel" class="card">
             <h3>Cancel Booking</h3>
             <p>Cancel an existing reservation</p>
         </a>
+
         <a href="/room-use" class="card">
             <h3>Use / Return Room</h3>
             <p>Check in or check out of a booked room</p>
         </a>
+
+        {% if session.get("role") == "security" %}
+        <a href="/security-room-status" class="card">
+            <h3>Security Room Status</h3>
+            <p>Update room status and manage fault alerts</p>
+        </a>
+        {% endif %}
+
     </div>
 </div>
 

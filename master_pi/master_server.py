@@ -103,7 +103,13 @@ def handle_request(request):
             request.get("booking_id"),
             request.get("room_id")
         )
-        
+    
+    if action == "update_room_status":
+        return update_room_status(
+            request.get("room_id"),
+            request.get("status")
+        )
+           
     else:
         return {
             "status": "error",
