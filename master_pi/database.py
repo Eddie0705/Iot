@@ -169,7 +169,9 @@ def create_security_staff(email, password, full_name, rmit_id):
         VALUES (%s, %s, %s, %s, 'security')
     """, (email, password, full_name, rmit_id))
     con.commit()
+    user_id = cur.lastrowid
     con.close()
+    log_action(user_id, "CREATE_STAFF", f"Security staff account created: {email}")
 
 
 def update_user(user_id, email, full_name, role, status):
@@ -182,6 +184,7 @@ def update_user(user_id, email, full_name, role, status):
     """, (email, full_name, role, status, user_id))
     con.commit()
     con.close()
+    log_action(user_id, "UPDATE_USER", f"User {user_id} updated: email={email}, role={role}, status={status}")
 
 
 def delete_user(user_id):
@@ -190,6 +193,7 @@ def delete_user(user_id):
     cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
     con.commit()
     con.close()
+    log_action(None, "DELETE_USER", f"User {user_id} deleted")
 
 
 def get_user_by_id(user_id):
