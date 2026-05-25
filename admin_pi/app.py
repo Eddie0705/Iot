@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from mqtt_admin import publish_announcement
 from mqtt_admin import publish_room_status
 import sys, os
@@ -7,6 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'master_pi'))
 from database import get_booking_logs, get_usage_logs, get_all_room_status, update_room_status
 
 app = Flask(__name__)
+app.secret_key = "admin_secret_key"
+
+
+def is_logged_in():
+    return session.get("admin") is not None
 
 
 @app.route("/")
@@ -16,8 +21,29 @@ def home():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.form["username"]
-    return render_template("dashboard.html", user=username)
+    from database import login_user
+    email = request.form["email"]
+    password = request.form["password"]
+    result = login_user(email, password)
+
+    if result.get("success") and result.get("role") == "admin":
+        session["admin"] = result["email"]
+        return render_template("dashboard.html", user=result["full_name"])
+
+    return render_template("admin_login.html", error="Invalid credentials or not an admin")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+@app.route("/dashboard")
+def dashboard():
+    if not is_logged_in():
+        return redirect("/")
+    return render_template("dashboard.html", user=session.get("admin"))
 
 
 @app.route("/send_announcement", methods=["POST"])
@@ -82,25 +108,36 @@ def delete_user(user_id):
 
 @app.route("/reports")
 def reports():
-    from database import get_fault_reports
-    rows = get_fault_reports()
-    return render_template("reports.html", fault_reports=rows)
+    return render_template("reports.html")
+
+
+@app.route("/generate_report")
+def generate_report():
+    from report_generator import generate_booking_frequency_chart, generate_booking_status_chart
+    generate_booking_frequency_chart()
+    generate_booking_status_chart()
+    return redirect("/reports")
 
 
 @app.route("/confirm_fault/<int:report_id>", methods=["POST"])
 def confirm_fault(report_id):
     from database import resolve_fault_report, get_fault_report_room
     room_name = get_fault_report_room(report_id)
-    resolve_fault_report(report_id)
-    update_room_status(room_name, "maintenance")
-    publish_announcement(f"Room {room_name} down, waiting for maintenance")
-    return redirect("/reports")
+    print(f"confirm_fault: report_id={report_id}, room_name={room_name}")
+    if room_name:
+        resolve_fault_report(report_id)
+        update_room_status(room_name, "fault")
+        print(f"confirm_fault: updated {room_name} to fault")
+        publish_announcement(f"Room {room_name} down, waiting for maintenance")
+    return redirect("/room_status")
 
 
 @app.route("/room_status")
 def room_status():
+    from database import get_fault_reports
     rows = get_all_room_status()
-    return render_template("room_status.html", room_status=rows)
+    fault_rows = get_fault_reports()
+    return render_template("room_status.html", room_status=rows, fault_reports=fault_rows)
 
 
 @app.route("/update_room", methods=["POST"])

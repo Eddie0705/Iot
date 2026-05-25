@@ -1,39 +1,47 @@
-<h2>Booking Logs</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logs</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; }
+        .navbar { background-color: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        th { background-color: #2c3e50; color: white; padding: 12px 15px; text-align: left; }
+        td { padding: 10px 15px; border-bottom: 1px solid #eee; }
+        tr:last-child td { border-bottom: none; }
+        h2 { color: #2c3e50; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h2>Logs</h2>
+    <a href="/dashboard">Back to Dashboard</a>
+</div>
+<div class="container">
+    <h2>Booking Logs</h2>
+    <table>
+        <tr><th>ID</th><th>User</th><th>Room</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Created</th></tr>
+        {% for log in booking_logs %}
+        <tr>
+            <td>{{ log[0] }}</td><td>{{ log[1] }}</td><td>{{ log[2] }}</td>
+            <td>{{ log[3] }}</td><td>{{ log[4] }}</td><td>{{ log[5] }}</td><td>{{ log[6] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-<ul>
-
-{% for log in logs %}
-
-    {% if log.type == "Booking Log" %}
-
-        <li>
-            [{{ log.time }}]
-            {{ log.room }} -
-            {{ log.message }}
-        </li>
-
-    {% endif %}
-
-{% endfor %}
-
-</ul>
-
-<h2>Usage Logs</h2>
-
-<ul>
-
-{% for log in logs %}
-
-    {% if log.type == "Usage Log" %}
-
-        <li>
-            [{{ log.time }}]
-            {{ log.room }} -
-            {{ log.message }}
-        </li>
-
-    {% endif %}
-
-{% endfor %}
-
-</ul>
+    <h2>Usage Logs</h2>
+    <table>
+        <tr><th>ID</th><th>User</th><th>Action</th><th>Details</th><th>Time</th></tr>
+        {% for log in usage_logs %}
+        <tr>
+            <td>{{ log[0] }}</td><td>{{ log[1] }}</td><td>{{ log[2] }}</td>
+            <td>{{ log[3] }}</td><td>{{ log[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>

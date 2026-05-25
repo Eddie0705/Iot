@@ -9,6 +9,7 @@ try:
     print("Connected to database successfully.")
     cur = con.cursor()
 
+    cur.execute("DROP TABLE IF EXISTS fault_reports")
     cur.execute("DROP TABLE IF EXISTS system_logs")
     cur.execute("DROP TABLE IF EXISTS bookings")
     cur.execute("DROP TABLE IF EXISTS rooms")

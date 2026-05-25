@@ -2,98 +2,183 @@
 
 ## Project Overview
 
-This project is an IoT-based smart classroom management system developed for COSC2674/2755 Programming Internet of Things.
+A distributed IoT classroom management system developed for COSC2674/2755 Programming Internet of Things (Semester 1, 2026).
 
-The system allows:
-
-- room booking
-- classroom monitoring
-- MQTT-based announcements
-- room status updates
-- admin and security management
-- real-time communication between Raspberry Pis
-
-The project uses Flask, MQTT, socket programming, SQLite/MySQL, and Raspberry Pi technologies.
+The system manages university classroom bookings, room monitoring, and admin control across multiple Raspberry Pi devices. Communication is handled via MQTT (publish-subscribe) and Socket Programming (request-response), with data persisted in a centralized remote MySQL database.
 
 ---
 
-## Team Members
+## Team Members & Division of Work
 
-| Name      | Role                                    |
-| --------- | --------------------------------------- |
-| Member 1  | Master Pi                               |
-| Member 2  | Agent Pi                                |
-| Member 3  | Room Pi                                 |
-| Your Name | Admin, Security, Testing, Documentation |
-
----
-
-## Technologies Used
-
-- Python
-- Flask
-- MQTT (Mosquitto + Paho MQTT)
-- Socket Programming
-- SQLite / MySQL
-- HTML/CSS
-- Bootstrap
-- Raspberry Pi
-- Sense HAT
+| Name | Student ID | Responsibilities |
+|------|------------|-----------------|
+| Member 1 | S3XXXXXX | Master Pi — socket server, database design, booking logic |
+| Member 2 | S3XXXXXX | Agent Pi — user registration, login, room booking interface |
+| Member 3 | S3XXXXXX | Room Pi — room display, environmental monitoring, Sense HAT |
+| Member 4 | S3XXXXXX | Admin Pi — admin dashboard, user management, reports, unit testing |
 
 ---
 
-## Project Structure
+## System Architecture
 
-admin_pi/
+The system consists of four components:
 
-- Flask admin dashboard
-- MQTT announcement publisher
-- Reporting system
-- Room status management
+**Master Pi**
+- Central hub running on a dedicated Raspberry Pi
+- Hosts the admin web interface (Flask, port 3000)
+- Runs the socket server (port 5050) to handle requests from Agent Pi and Room Pi
+- Connects directly to the remote MySQL database (Google Cloud SQL)
+- Runs the Mosquitto MQTT broker
 
-agent_pi/
+**Agent Pi**
+- Personal device for each user/staff member
+- Hosts a Flask web interface for registration, login, room search, booking, and cancellation
+- Communicates with Master Pi via socket programming
+- Subscribes to MQTT topics for announcements and alerts
 
-- User booking interface
-- Login/register system
+**Room Pi**
+- One per classroom
+- Displays room status, upcoming bookings, and environmental readings (temperature, humidity, pressure)
+- Receives room status updates via MQTT
+- Uses Sense HAT for visual fault alerts
 
-room_pi/
+**Remote Database (Google Cloud SQL — MySQL)**
+- Accessible only from Master Pi
+- Tables: `users`, `rooms`, `bookings`, `system_logs`, `fault_reports`
 
-- Room monitoring display
-- Environmental sensor readings
-- Room availability display
+### Communication Flow
 
-## Installation
+```
+Agent Pi  ──socket──►  Master Pi  ◄──socket──  Room Pi
+                           │
+                      [MySQL DB]
+                           │
+                        [MQTT Broker]
+                           │
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+      Agent Pi          Room Pi          Admin Pi
+   (subscriber)      (subscriber)      (publisher)
+```
 
-### Create virtual environment
+---
 
-### Activate virtual environment
+## Features
 
-source venv/bin/activate
+### User (Agent Pi)
+- Register with email, password, full name, RMIT ID
+- Login and logout
+- Search available rooms by time slot
+- Book a room — receive a one-time token on success
+- Cancel a booking
+- Check in and return a room
+- Report a room fault
 
-### Install dependencies
+### Admin (Master Pi)
+- Login via Master Pi web interface
+- View and edit user accounts
+- Create and delete security staff accounts
+- View booking logs and usage logs
+- View and update room status
+- Review fault reports and confirm fault decisions
+- Publish MQTT announcements to all devices
+- Generate data visualization reports (booking frequency, booking status)
 
-pip install flask
-pip install paho-mqtt
+### Security Staff (Agent Pi)
+- Login via Agent Pi
+- Change room status (e.g. In Use → Maintenance)
+- Receive visual Sense HAT alert when a room enters Fault status
 
-### Run Flask app
+---
 
-python app.py
+## Custom Enhancements
 
-## MQTT Broker Setup
+### Enhancement 1 — [Name your enhancement here]
+<!-- Describe your first custom enhancement, what it does, why it's novel and useful -->
 
-Install Mosquitto:
+### Enhancement 2 — [Name your enhancement here]
+<!-- Describe your second custom enhancement, what it does, why it's novel and useful -->
 
-brew install mosquitto
+---
 
-Start Mosquitto:
+## Installation & Setup
 
-brew services start mosquitto
+### 1. Clone the repository
+```bash
+git clone <repo-url>
+cd group-assignment-group-37
+```
 
-## Admin Features
+### 2. Create and activate virtual environment
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-- Admin login
-- Dashboard interface
-- Send MQTT announcements
-- View room logs
-- Generate reports
-- Update room status
+### 3. Install dependencies
+```bash
+pip install flask paho-mqtt pymysql matplotlib pytest
+```
+
+### 4. Set up the database (run once)
+```bash
+cd master_pi
+python3 db_init.py
+python3 db_seed.py
+```
+
+### 5. Start MQTT broker on Master Pi
+```bash
+mosquitto
+```
+
+### 6. Run the admin web app (Master Pi)
+```bash
+cd admin_pi
+python3 app.py
+```
+
+### 7. Run the socket server (Master Pi)
+```bash
+cd master_pi
+python3 master_server.py
+```
+
+### 8. Run the agent web app (Agent Pi)
+```bash
+cd agent_pi
+python3 app.py
+```
+
+---
+
+## Running Unit Tests
+
+```bash
+python3 -m pytest tests/ -v
+```
+
+Tests cover:
+- MQTT message format and topic correctness
+- Room state transitions
+- Error and exception handling
+- Authentication logic
+- User input validation
+
+---
+
+## Challenges Encountered
+
+- **MySQL installation on macOS** — `mysqlclient` failed to compile due to missing `zstd` library. Resolved by using `PyMySQL` with `install_as_MySQLdb()` as a drop-in replacement.
+- **Google Cloud SQL firewall** — University (RMIT) network blocks port 3306. Development required switching to a mobile hotspot or whitelisting the IP in Google Cloud Console.
+- **Module imports across directories** — Python's relative imports don't work when running Flask apps as scripts. Resolved using `sys.path.insert()` to add sibling directories to the import path.
+- **MQTT broker configuration** — Initial setup used `localhost` as broker address. Updated to use the Master Pi's IP so all devices on the network can publish and subscribe.
+
+---
+
+## Lessons Learned
+
+- Designing the database schema upfront saves significant refactoring time — adding the `fault_reports` table later required updating the drop order in `db_init.py` due to foreign key constraints.
+- Mocking is essential for unit testing database and MQTT code — tests should not depend on real connections to be reliable and fast.
+- Separating database query functions into `database.py` from Flask routes keeps code modular and makes testing significantly easier.
+- MQTT and socket serve different purposes — MQTT is best for broadcast/one-to-many, sockets for direct request-response between two devices.
