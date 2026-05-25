@@ -278,7 +278,7 @@ def search_room(start_time, end_time):
         cur.execute("""
             SELECT room_id, room_name, location, capacity, status
             FROM rooms
-            WHERE status = 'Available'
+            WHERE status = 'available'
             AND room_id NOT IN (
                 SELECT room_id
                 FROM bookings
