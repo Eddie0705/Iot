@@ -128,6 +128,7 @@ def confirm_fault(report_id):
         resolve_fault_report(report_id)
         update_room_status(room_name, "fault")
         print(f"confirm_fault: updated {room_name} to fault")
+        publish_room_status(room_name, "fault")
         publish_announcement(f"Room {room_name} down, waiting for maintenance")
     return redirect("/room_status")
 
