@@ -125,12 +125,14 @@ def room_use():
         booking_id = request.form["booking_id"]
         room_id = request.form["room_id"]
         room_action = request.form["room_action"]
+        token = request.form["token"]
 
         ## create request data for Master Pi
         request_data = {
             "action": room_action,
             "booking_id": booking_id,
-            "room_id": room_id
+            "room_id": room_id,
+            "token": token
         }
 
         ## send request and get response

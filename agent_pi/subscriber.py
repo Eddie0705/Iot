@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 
-BROKER = "10.132.66.24"
+BROKER = "10.132.60.32"
 PORT = 1883
 ## this runs when Agent Pi connects to MQTT broker
 def on_connect(client, userdata, flags, rc):
