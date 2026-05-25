@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from client import send_request
+from qr_service import generate_qr_base64
 
 app = Flask(__name__)
 
@@ -89,7 +90,11 @@ def book_room():
 
         response = send_request(request_data)
 
-        return render_template("book.html", response=response)
+        qr_code = None
+        if response.get("status") == "success":
+            qr_code = generate_qr_base64(response["booking_id"], response["token"])
+
+        return render_template("book.html", response=response, qr_code=qr_code)
 
     return render_template("book.html")
 
