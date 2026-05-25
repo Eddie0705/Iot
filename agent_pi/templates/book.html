@@ -32,17 +32,23 @@
     <div class="card">
         <h2>Room Booking</h2>
         {% if response %}
-            <div class="message {% if response.status == 'success' %}success{% else %}error{% endif %}">
-                {{ response.message }}
-            </div>
-            {% if response.token %}
-            <div class="token-box">
-                <h3>Your Booking Token</h3>
-                <div class="token">{{ response.token }}</div>
-                <p>Save this token — you will need it to access the room.</p>
-            </div>
-            {% endif %}
-        {% endif %}
+    <div class="message {% if response.status == 'success' %}success{% else %}error{% endif %}">
+        {{ response.message }}
+    </div>
+
+    {% if response.token %}
+    <div class="token-box">
+        <h3>Your Booking Details</h3>
+
+        <p><strong>Booking ID:</strong> {{ response.booking_id }}</p>
+
+        <h3>Your Booking Token</h3>
+        <div class="token">{{ response.token }}</div>
+
+        <p>Save this booking ID and token — you will need them to access the room.</p>
+    </div>
+    {% endif %}
+{% endif %}
         <form method="POST" action="/book">
             <label>Room ID</label>
             <input type="text" name="room_id" required>
