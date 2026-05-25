@@ -1,6 +1,7 @@
 import MySQLdb
 from db_setup import get_connection
 import secrets
+from email_service import send_booking_confirmation, send_booking_cancellation
 
 def login_user(email, password):
     con = None
@@ -112,9 +113,10 @@ def update_room_status(room_name, new_status):
         return {"status": "error", "message": "Room not found"}
 
     try:
-        current_status = row[0].title()
-        context = RoomContext(current_status)
-        context.transition_to(new_status)
+        current_norm = row[0].lower().replace("_", " ")
+        target_norm = new_status.lower().replace("_", " ")
+        context = RoomContext(current_norm)
+        context.transition_to(target_norm)
     except ValueError as e:
         con.close()
         return {"status": "error", "message": str(e)}
@@ -395,6 +397,16 @@ def book_room(room_id, start_time, end_time, user_id=1):
 
         log_action(user_id, "BOOK_ROOM", f"Booking {booking_id} created for room {room_id}")
 
+        cur.execute("SELECT email FROM users WHERE user_id = %s", (user_id,))
+        user_row = cur.fetchone()
+        cur.execute("SELECT room_name FROM rooms WHERE room_id = %s", (room_id,))
+        room_row = cur.fetchone()
+        print(f"DEBUG email: user_row={user_row}, room_row={room_row}")
+        if user_row and room_row:
+            send_booking_confirmation(user_row[0], room_row[0], start_time, end_time, token)
+        else:
+            print("DEBUG: skipping email — user or room not found")
+
         return {
             "status": "success",
             "message": "Room booked successfully",
@@ -421,10 +433,12 @@ def cancel_booking(booking_id, user_id=1):
         cur = con.cursor()
 
         cur.execute("""
-            SELECT booking_id
-            FROM bookings
-            WHERE booking_id = %s
-            AND status = 'Booked'
+            SELECT b.booking_id, u.email, r.room_name, b.start_time, b.end_time
+            FROM bookings b
+            JOIN users u ON b.user_id = u.user_id
+            JOIN rooms r ON b.room_id = r.room_id
+            WHERE b.booking_id = %s
+            AND b.status = 'Booked'
         """, (booking_id,))
 
         booking = cur.fetchone()
@@ -444,6 +458,8 @@ def cancel_booking(booking_id, user_id=1):
         con.commit()
 
         log_action(user_id, "CANCEL_BOOKING", f"Booking {booking_id} cancelled")
+
+        send_booking_cancellation(booking[1], booking[2], booking[3], booking[4])
 
         return {
             "status": "success",
