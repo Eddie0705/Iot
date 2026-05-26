@@ -339,10 +339,12 @@ def book_room(room_id, start_time, end_time, user_id=1):
                 "message": "Room not found"
             }
 
-        if room[0] != "Available":
+        room_status = room[0].lower()
+
+        if room_status in ["maintenance", "fault"]:
             return {
                 "status": "error",
-                "message": f"Room is currently {room[0]}"
+                "message": f"Room is currently {room[0]} and cannot be booked"
             }
 
         cur.execute("""
