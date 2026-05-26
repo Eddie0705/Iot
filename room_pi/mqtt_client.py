@@ -10,29 +10,10 @@ BROKER = "10.132.60.32" # FIX IP
 HOST = "10.132.60.32"
 PORT = 5050
 
+
 def on_connect(client, userdata, flags, rc):
     client.subscribe("room/response/#") 
     
-    global isInitialised
-    if not isInitialised:
-        global SECRET
-        SECRET = secrets.token_hex(32)
-        # grab this room pi ID and save it
-        client.publish("room/request/", json.dumps({
-            "action": "get_room_id",
-            "key": SECRET # send room PI back on this ID
-        }).encode())
-
-        time.sleep(2) # sleep 2 seconds wait for message to arrive lol
-        global ROOMID
-        try:
-            ROOMID = response["set_room_id"]["id"]
-        except: 
-            # TODO: handle what happens if id is NOT returned or saved or blank
-            return
-
-        
-        isInitialised = True
     
 
 
@@ -40,8 +21,11 @@ def on_connect(client, userdata, flags, rc):
 response = {}
 def on_message(client, userdata, msg):
     global response
-    global SECRET
-    message = json.loads(msg.payload.decode()) # decode to json becasue thats what is sent by master pi
+    try:
+        message = json.loads(msg.payload.decode()) # decode to json becasue thats what is sent by master pi
+    except Exception as e:
+        print("Error Decoding Request")
+        print(e)
     handleMessage(message)
 
 
@@ -56,7 +40,20 @@ def send_message(message_data):
         try:
             # Connect to the server
             client_socket.connect((HOST, PORT))
-            
+            global ROOMID
+            ROOMID = None
+            if (ROOMID == None):
+                serialized_data = json.dumps({"action": "get_room_id"}).encode()
+                client_socket.sendall(serialized_data)
+                response_bytes = client_socket.recv(4096)
+                if response_bytes:
+                    ROOMID = json.loads(response_bytes.decode()["room_id"])
+                else:
+                    print("error getting room ID")
+                    return
+            else:
+                message_data["room_id"] = ROOMID
+
             # Serialize and send the data
             serialized_data = json.dumps(message_data).encode()
             client_socket.sendall(serialized_data)
@@ -67,7 +64,7 @@ def send_message(message_data):
             # Parse and return the response
             if response_bytes:
                 handleMessage(json.loads(response_bytes.decode()))
-                return
+                return json.loads(response_bytes.decode())
             else:
                 return {"status": "error", "message": "Server closed connection without responding."}
                 
@@ -83,6 +80,7 @@ def handleMessage(message):
     try:
         action = message.get("action")
 
+        response
         match action: # handle actions
             case "set_room_id":
                 print("set_room_id action recieved")
