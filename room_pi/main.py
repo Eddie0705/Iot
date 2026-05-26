@@ -1,5 +1,5 @@
 from app import app
-from mqtt_client import *
+import mqtt_client
 
 
 
