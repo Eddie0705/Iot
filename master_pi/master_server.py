@@ -3,6 +3,8 @@ import json
 # schedule of user booking (need time of booking) + confirmation of check in 
 from database import (
     login_user,
+    get_room_status,
+    get_next_booking,
     get_booking_logs,
     get_usage_logs,
     get_booking_history,
@@ -10,6 +12,7 @@ from database import (
     update_room_status,
     get_all_users,
     get_fault_reports,
+    report_fault,
     resolve_fault_report,
     create_security_staff,
     update_user,
@@ -20,7 +23,10 @@ from database import (
     book_room,
     cancel_booking,
     use_room,
-    return_room
+    return_room,
+    get_room_schedule,
+    checkin_by_token,
+    checkout_room
 )
 
 HOST = "0.0.0.0"
@@ -82,13 +88,14 @@ def handle_request(request):
         return book_room(
             request.get("room_id"),
             start_datetime,
-            end_datetime
+            end_datetime,
+            request.get("user_id", 1)
         )
 
     if action == "cancel_booking":
         return cancel_booking(
-            request.get("user_id"),
-            request.get("booking_id")
+            request.get("booking_id"),
+            request.get("user_id")
         )
 
     if action == "use_room":
@@ -103,7 +110,39 @@ def handle_request(request):
             request.get("booking_id"),
             request.get("room_id")
         )
-        
+    
+    if action == "report_fault":
+        return report_fault(
+            request.get("room_name"),
+            request.get("user_id", 1),
+            request.get("description")
+        )
+
+    if action == "get_all_rooms":
+        rows = get_all_room_status()
+        return {
+            "status": "success",
+            "rooms": [{"room_id": r[0], "room_name": r[1]} for r in rows]
+        }
+
+    if action == "update_room_status":
+        return update_room_status(
+            request.get("room_name"),
+            request.get("status")
+        )
+
+    if action == "checkin_by_token":
+        return checkin_by_token(request.get("room_id"), request.get("token"))
+
+    if action == "checkout_room":
+        return checkout_room(request.get("room_id"))
+
+    if action == "get_room_status":
+        return get_room_status(request.get("room_id"))
+
+    if action == "get_room_schedule":
+        return get_room_schedule(request.get("room_id"))
+
     else:
         return {
             "status": "error",
@@ -112,6 +151,8 @@ def handle_request(request):
 
 
 def start_server():
+    from mqtt_subscriber import start_mqtt_subscriber
+    start_mqtt_subscriber()
     ## create TCP socket server using IPv4 addresses/socket.AF_INET and TCP protocol/socket.SOCK_STREAM
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

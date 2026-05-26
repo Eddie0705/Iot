@@ -15,16 +15,19 @@ from master_pi.database import book_room, cancel_booking, use_room
 
 class TestBookRoom(unittest.TestCase):
 
+    @patch("master_pi.database.send_booking_confirmation")
     @patch("master_pi.database.log_action")
     @patch("master_pi.database.get_connection")
-    def test_book_room_success_returns_token(self, mock_get_connection, mock_log):
+    def test_book_room_success_returns_token(self, mock_get_connection, mock_log, mock_email):
         mock_con = MagicMock()
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
         mock_cur.fetchone.side_effect = [
-            ("Available",),  # room status check
-            None             # no existing booking conflict
+            ("available",),           # room status check
+            None,                     # no existing booking conflict
+            ("alice@rmit.edu.au",),   # user email for confirmation
+            ("A204",)                 # room name for confirmation
         ]
         mock_cur.lastrowid = 1
 
@@ -34,14 +37,18 @@ class TestBookRoom(unittest.TestCase):
         self.assertIn("token", result)
         self.assertIsNotNone(result["token"])
 
+    @patch("master_pi.database.send_booking_confirmation")
     @patch("master_pi.database.log_action")
     @patch("master_pi.database.get_connection")
-    def test_book_room_token_is_unique(self, mock_get_connection, mock_log):
+    def test_book_room_token_is_unique(self, mock_get_connection, mock_log, mock_email):
         mock_con = MagicMock()
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
-        mock_cur.fetchone.side_effect = [("Available",), None, ("Available",), None]
+        mock_cur.fetchone.side_effect = [
+            ("available",), None, ("alice@rmit.edu.au",), ("A204",),
+            ("available",), None, ("bob@rmit.edu.au",), ("A204",)
+        ]
         mock_cur.lastrowid = 1
 
         result1 = book_room(1, "2026-05-25 09:00:00", "2026-05-25 11:00:00", user_id=4)
@@ -70,12 +77,12 @@ class TestBookRoom(unittest.TestCase):
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
-        mock_cur.fetchone.return_value = ("In Use",)
+        mock_cur.fetchone.return_value = ("maintenance",)
 
         result = book_room(1, "2026-05-25 09:00:00", "2026-05-25 11:00:00", user_id=4)
 
         self.assertEqual(result["status"], "error")
-        self.assertIn("In Use", result["message"])
+        self.assertIn("maintenance", result["message"])
 
     @patch("master_pi.database.log_action")
     @patch("master_pi.database.get_connection")
@@ -85,7 +92,7 @@ class TestBookRoom(unittest.TestCase):
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
         mock_cur.fetchone.side_effect = [
-            ("Available",),  # room is available
+            ("available",),  # room is available
             (1,)             # but existing booking conflicts
         ]
 
@@ -97,14 +104,18 @@ class TestBookRoom(unittest.TestCase):
 
 class TestCancelBooking(unittest.TestCase):
 
+    @patch("master_pi.database.send_booking_cancellation")
     @patch("master_pi.database.log_action")
     @patch("master_pi.database.get_connection")
-    def test_cancel_booking_success(self, mock_get_connection, mock_log):
+    def test_cancel_booking_success(self, mock_get_connection, mock_log, mock_email):
         mock_con = MagicMock()
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
-        mock_cur.fetchone.return_value = (1,)
+        mock_cur.fetchone.return_value = (
+            1, "alice@rmit.edu.au", "A204",
+            "2026-05-25 09:00:00", "2026-05-25 11:00:00"
+        )
 
         result = cancel_booking(1, user_id=4)
 

@@ -1,12 +1,16 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from mqtt_admin import publish_announcement
-from mqtt_admin import publish_room_status
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'master_pi'))
 
 from database import get_booking_logs, get_usage_logs, get_all_room_status, update_room_status
 
 app = Flask(__name__)
+app.secret_key = "admin_secret_key"
+
+
+def is_logged_in():
+    return session.get("admin") is not None
 
 
 @app.route("/")
@@ -16,15 +20,36 @@ def home():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.form["username"]
-    return render_template("dashboard.html", user=username)
+    from database import login_user
+    email = request.form["email"]
+    password = request.form["password"]
+    result = login_user(email, password)
+
+    if result.get("status") == "success" and result.get("role") == "admin":
+        session["admin"] = result["email"]
+        return render_template("dashboard.html", user=result["full_name"])
+
+    return render_template("admin_login.html", error="Invalid credentials or not an admin")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+@app.route("/dashboard")
+def dashboard():
+    if not is_logged_in():
+        return redirect("/")
+    return render_template("dashboard.html", user=session.get("admin"))
 
 
 @app.route("/send_announcement", methods=["POST"])
 def send_announcement():
     message = request.form["message"]
     publish_announcement(message)
-    return redirect("/")
+    return redirect("/dashboard")
 
 
 @app.route("/logs")
@@ -119,7 +144,6 @@ def update_room():
     room = request.form["room"]
     status = request.form["status"]
     update_room_status(room, status)
-    publish_room_status(room, status)
     return redirect("/room_status")
 
 

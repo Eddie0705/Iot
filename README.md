@@ -10,12 +10,12 @@ The system manages university classroom bookings, room monitoring, and admin con
 
 ## Team Members & Division of Work
 
-| Name          | Student ID | Responsibilities                                                                                           |
-| ------------- | ---------- | ---------------------------------------------------------------------------------------------------------- |
-| Halbert Lie Setiawan      | S3962208   | Master Pi — socket server, database design, booking logic                                                  |
-| Member 2      | S3XXXXXX   | Agent Pi — user registration, login, room booking interface                                                |
-| Member 3      | S3XXXXXX   | Room Pi — room display, environmental monitoring, Sense HAT                                                |
-| Yong Tian Goh | S4025884   | Admin — admin dashboard, user management, reports, unit testing, enhancement, readme, desgin pattern, mqtt |
+| Name                 | Student ID | Responsibilities                                                                                           |
+| -------------------- | ---------- | ---------------------------------------------------------------------------------------------------------- |
+| Halbert Lie Setiawan | S3962208   | Master Pi — socket server, database design, booking logic                                                  |
+| Henry Pham           | S4053540   | Agent Pi — user registration, login, room booking interface                                                |
+| Abdul Wajid Khan     | S4172021   | Room Pi — room display, environmental monitoring, Sense HAT                                                |
+| Yong Tian Goh        | S4025884   | Admin — admin dashboard, user management, reports, unit testing, enhancement, readme, desgin pattern, mqtt |
 
 ---
 

@@ -1,8 +1,10 @@
 import paho.mqtt.client as mqtt
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'common'))
+from config import MASTER_HOST
 
-BROKER = "localhost"
-#conection to the master pi mqtt broker
-#BROKER = "127.0.1.1"
+BROKER = MASTER_HOST
 PORT = 1883
 
 def publish_announcement(message):

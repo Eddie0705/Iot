@@ -57,25 +57,17 @@ class TestMQTT(unittest.TestCase):
 
 class TestRoomStateTransitions(unittest.TestCase):
 
-    VALID_STATUSES = ["available", "in_use", "maintenance", "fault"]
-
     @patch("master_pi.database.get_connection")
     def test_update_to_valid_status(self, mock_get_connection):
         mock_con = MagicMock()
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
+        mock_cur.fetchone.return_value = ("available",)
 
-        for status in self.VALID_STATUSES:
-            update_room_status("A101", status)
-            mock_cur.execute.assert_called_with(
-                """
-        UPDATE rooms
-        SET status = %s
-        WHERE room_name = %s
-    """,
-                (status, "A101")
-            )
+        result = update_room_status("A101", "fault")
+
+        self.assertEqual(result["status"], "success")
 
     @patch("master_pi.database.get_connection")
     def test_update_room_commits(self, mock_get_connection):
@@ -83,6 +75,7 @@ class TestRoomStateTransitions(unittest.TestCase):
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
+        mock_cur.fetchone.return_value = ("available",)
 
         update_room_status("A101", "fault")
 
@@ -94,6 +87,7 @@ class TestRoomStateTransitions(unittest.TestCase):
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
+        mock_cur.fetchone.return_value = ("available",)
 
         update_room_status("A101", "maintenance")
 
@@ -127,7 +121,7 @@ class TestErrorHandling(unittest.TestCase):
         from master_pi.database import login_user
         result = login_user("test@test.com", "password")
 
-        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "error")
         self.assertIn("Database error", result["message"])
 
     @patch("master_pi.database.get_connection")
@@ -141,7 +135,7 @@ class TestErrorHandling(unittest.TestCase):
         from master_pi.database import login_user
         result = login_user("wrong@test.com", "wrongpassword")
 
-        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "error")
         self.assertEqual(result["message"], "Invalid email or password")
 
     @patch("master_pi.database.get_connection")
