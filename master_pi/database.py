@@ -572,6 +572,32 @@ def use_room(booking_id, room_id, token, user_id=1):
             con.close()
 
 
+def checkout_room(room_id):
+    con = None
+    try:
+        con = get_connection()
+        cur = con.cursor()
+        cur.execute("""
+            SELECT booking_id, user_id FROM bookings
+            WHERE room_id = %s AND status = 'Checked In'
+            ORDER BY start_time DESC LIMIT 1
+        """, (room_id,))
+        booking = cur.fetchone()
+        if not booking:
+            return {"status": "error", "message": "No active check-in found for this room"}
+        booking_id, user_id = booking
+        cur.execute("UPDATE bookings SET status = 'completed' WHERE booking_id = %s", (booking_id,))
+        cur.execute("UPDATE rooms SET status = 'available' WHERE room_id = %s", (room_id,))
+        con.commit()
+        log_action(user_id, "RETURN_ROOM", f"User checked out of room {room_id}")
+        return {"status": "success", "message": "Check-out successful"}
+    except MySQLdb.Error as e:
+        return {"status": "error", "message": f"Database error: {e}"}
+    finally:
+        if con:
+            con.close()
+
+
 def checkin_by_token(room_id, token):
     con = None
     try:

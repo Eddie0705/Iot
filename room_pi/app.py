@@ -1,8 +1,27 @@
+import threading
+import time
 from flask import Flask, render_template, jsonify, request
 from web_data import getWeatherStats, getStatus, getRoomName, getSchedule, ROOM_ID
 from socket_client import send_message
 
 app = Flask(__name__)
+
+
+def auto_checkout_loop():
+    while True:
+        time.sleep(60)
+        bookings = getSchedule()
+        from datetime import datetime
+        now = datetime.now()
+        for b in bookings:
+            if b.get("status") == "Checked In":
+                end_time = datetime.strptime(b["end_time"], "%Y-%m-%d %H:%M:%S")
+                if now >= end_time:
+                    send_message({"action": "checkout_room", "room_id": ROOM_ID})
+                    break
+
+
+threading.Thread(target=auto_checkout_loop, daemon=True).start()
 
 
 @app.route('/')
@@ -76,6 +95,7 @@ def checkin():
         "token": token
     })
     return jsonify(result)
+
 
 
 if __name__ == "__main__":
