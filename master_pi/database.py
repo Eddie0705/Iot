@@ -339,7 +339,7 @@ def book_room(room_id, start_time, end_time, user_id=1):
                 "message": "Room not found"
             }
 
-        if room[0] != "available":
+        if room[0].lower() != "available":
             return {
                 "status": "error",
                 "message": f"Room is currently {room[0]}"
@@ -584,4 +584,94 @@ def update_room_status(room_id, status):
 
     finally:
         if con:
-            con.close()        
+            con.close() 
+
+def get_room_status(room_id):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT room_id, room_name, location, capacity, status
+            FROM rooms
+            WHERE room_id = %s
+        """, (room_id,))
+
+        row = cur.fetchone()
+
+        if not row:
+            return {
+                "status": "error",
+                "message": "Room not found"
+            }
+
+        return {
+            "status": "success",
+            "room": {
+                "room_id": row[0],
+                "room_name": row[1],
+                "location": row[2],
+                "capacity": row[3],
+                "room_status": row[4]
+            }
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
+
+
+def get_next_booking(room_id):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT booking_id, start_time, end_time, status
+            FROM bookings
+            WHERE room_id = %s
+            AND start_time >= NOW()
+            AND status IN ('Booked', 'Checked In')
+            ORDER BY start_time ASC
+            LIMIT 1
+        """, (room_id,))
+
+        row = cur.fetchone()
+
+        if not row:
+            return {
+                "status": "success",
+                "message": "No upcoming booking",
+                "next_booking": None
+            }
+
+        return {
+            "status": "success",
+            "message": "Next booking retrieved",
+            "next_booking": {
+                "booking_id": row[0],
+                "start_time": str(row[1]),
+                "end_time": str(row[2]),
+                "booking_status": row[3]
+            }
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()
