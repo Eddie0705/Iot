@@ -12,7 +12,7 @@ The system manages university classroom bookings, room monitoring, and admin con
 
 | Name          | Student ID | Responsibilities                                                                                           |
 | ------------- | ---------- | ---------------------------------------------------------------------------------------------------------- |
-| Member 1      | S3XXXXXX   | Master Pi — socket server, database design, booking logic                                                  |
+| Halbert Lie Setiawan      | S3962208   | Master Pi — socket server, database design, booking logic                                                  |
 | Member 2      | S3XXXXXX   | Agent Pi — user registration, login, room booking interface                                                |
 | Member 3      | S3XXXXXX   | Room Pi — room display, environmental monitoring, Sense HAT                                                |
 | Yong Tian Goh | S4025884   | Admin — admin dashboard, user management, reports, unit testing, enhancement, readme, desgin pattern, mqtt |
