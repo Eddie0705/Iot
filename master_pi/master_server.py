@@ -82,13 +82,14 @@ def handle_request(request):
         return book_room(
             request.get("room_id"),
             start_datetime,
-            end_datetime
+            end_datetime,
+            request.get("user_id", 1)
         )
 
     if action == "cancel_booking":
         return cancel_booking(
-            request.get("user_id"),
-            request.get("booking_id")
+            request.get("booking_id"),
+            request.get("user_id", 1)
         )
 
     if action == "use_room":

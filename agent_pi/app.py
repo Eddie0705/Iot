@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from client import send_request
 from qr_service import generate_qr_base64
 
 app = Flask(__name__)
+app.secret_key = "agent_secret_key"
 
 
 @app.route("/")
@@ -22,6 +23,8 @@ def login():
         response = send_request(request_data)
 
         if response.get("status") == "success":
+            session["user_id"] = response.get("user_id")
+            session["email"] = response.get("email")
             return redirect(url_for("dashboard"))
 
         return render_template("login.html", response=response)
@@ -85,7 +88,8 @@ def book_room():
             "room_id": room_id,
             "date": date,
             "start_time": start_time,
-            "end_time": end_time
+            "end_time": end_time,
+            "user_id": session.get("user_id", 1)
         }
 
         response = send_request(request_data)
@@ -108,7 +112,8 @@ def cancel_booking():
         ## create request data to send to Master Pi
         request_data = {
             "action": "cancel_booking",
-            "booking_id": booking_id
+            "booking_id": booking_id,
+            "user_id": session.get("user_id", 1)
         }
 
         ## send request to Master Pi and get response
@@ -135,7 +140,9 @@ def room_use():
         request_data = {
             "action": room_action,
             "booking_id": booking_id,
-            "room_id": room_id
+            "room_id": room_id,
+            "token": request.form.get("token", ""),
+            "user_id": session.get("user_id", 1)
         }
 
         ## send request and get response
