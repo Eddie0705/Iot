@@ -20,10 +20,10 @@ def on_message(client, userdata, msg):
     parts = topic.split("/")
     if len(parts) == 3 and parts[2] == "fault":
         room_name = parts[1]
-        print(f"Fault reported for room {room_name} via MQTT")
-        from database import update_room_status
-        result = update_room_status(room_name, "fault")
-        print(f"Status update result: {result}")
+        print(f"Fault report received for room {room_name} via MQTT")
+        from database import report_fault
+        result = report_fault(room_name, 1, "Fault reported by Room Pi sensor")
+        print(f"Fault report created: {result}")
 
 
 def start_mqtt_subscriber():
