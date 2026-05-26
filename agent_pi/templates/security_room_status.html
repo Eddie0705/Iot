@@ -128,8 +128,13 @@
         {% endif %}
 
         <form method="POST" action="/security-room-status">
-            <label>Room ID</label>
-            <input type="text" name="room_id" required>
+            <label>Room Name</label>
+            <select name="room_name" required>
+                <option value="" disabled selected>Select a room</option>
+                {% for room in rooms %}
+                <option value="{{ room.room_name }}">{{ room.room_name }}</option>
+                {% endfor %}
+            </select>
 
             <label>Status</label>
             <select name="status" required>

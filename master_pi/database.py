@@ -604,32 +604,3 @@ def return_room(booking_id, room_id, user_id=1):
         if con:
             con.close()
 
-def update_room_status(room_id, status):
-    con = None
-
-    try:
-        con = get_connection()
-        cur = con.cursor()
-
-        cur.execute("""
-            UPDATE rooms
-            SET status = %s
-            WHERE room_id = %s
-        """, (status, room_id))
-
-        con.commit()
-
-        return {
-            "status": "success",
-            "message": f"Room {room_id} status updated to {status}"
-        }
-
-    except MySQLdb.Error as e:
-        return {
-            "status": "error",
-            "message": f"Database error: {e}"
-        }
-
-    finally:
-        if con:
-            con.close()        

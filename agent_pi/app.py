@@ -183,12 +183,15 @@ def security_room_status():
     if session.get("role") != "security":
         return redirect(url_for("dashboard"))
 
+    rooms_response = send_request({"action": "get_all_rooms"})
+    rooms = rooms_response.get("rooms", [])
+
     if request.method == "POST":
         new_status = request.form["status"]
 
         request_data = {
             "action": "update_room_status",
-            "room_id": request.form["room_id"],
+            "room_name": request.form["room_name"],
             "status": new_status
         }
 
@@ -197,9 +200,9 @@ def security_room_status():
         if response.get("status") == "success" and new_status == "fault":
             show_fault_warning()
 
-        return render_template("security_room_status.html", response=response)
+        return render_template("security_room_status.html", response=response, rooms=rooms)
 
-    return render_template("security_room_status.html")
+    return render_template("security_room_status.html", rooms=rooms)
 
 @app.route("/dashboard")
 def dashboard():

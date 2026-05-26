@@ -105,9 +105,16 @@ def handle_request(request):
             request.get("room_id")
         )
     
+    if action == "get_all_rooms":
+        rows = get_all_room_status()
+        return {
+            "status": "success",
+            "rooms": [{"room_id": r[0], "room_name": r[1]} for r in rows]
+        }
+
     if action == "update_room_status":
         return update_room_status(
-            request.get("room_id"),
+            request.get("room_name"),
             request.get("status")
         )
            
