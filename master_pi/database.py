@@ -150,6 +150,30 @@ def get_all_users():
     return rows
 
 
+def report_fault(room_name, user_id, description):
+    con = None
+    try:
+        con = get_connection()
+        cur = con.cursor()
+        cur.execute("SELECT room_id FROM rooms WHERE room_name = %s", (room_name,))
+        row = cur.fetchone()
+        if not row:
+            return {"status": "error", "message": "Room not found"}
+        room_id = row[0]
+        cur.execute("""
+            INSERT INTO fault_reports (room_id, reported_by, description, status)
+            VALUES (%s, %s, %s, 'pending')
+        """, (room_id, user_id, description))
+        con.commit()
+        log_action(user_id, "REPORT_FAULT", f"Fault reported for room {room_name}: {description}")
+        return {"status": "success", "message": "Fault report submitted successfully"}
+    except MySQLdb.Error as e:
+        return {"status": "error", "message": f"Database error: {e}"}
+    finally:
+        if con:
+            con.close()
+
+
 def get_fault_reports():
     con = get_connection()
     cur = con.cursor()

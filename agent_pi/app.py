@@ -204,6 +204,20 @@ def security_room_status():
 
     return render_template("security_room_status.html", rooms=rooms)
 
+@app.route("/report-fault", methods=["GET", "POST"])
+def report_fault():
+    if request.method == "POST":
+        request_data = {
+            "action": "report_fault",
+            "room_name": request.form["room_name"],
+            "description": request.form["description"],
+            "user_id": session.get("user_id", 1)
+        }
+        response = send_request(request_data)
+        return render_template("report_fault.html", response=response)
+    return render_template("report_fault.html")
+
+
 @app.route("/dashboard")
 def dashboard():
     return render_template(

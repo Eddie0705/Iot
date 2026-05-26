@@ -10,6 +10,7 @@ from database import (
     update_room_status,
     get_all_users,
     get_fault_reports,
+    report_fault,
     resolve_fault_report,
     create_security_staff,
     update_user,
@@ -105,6 +106,13 @@ def handle_request(request):
             request.get("room_id")
         )
     
+    if action == "report_fault":
+        return report_fault(
+            request.get("room_name"),
+            request.get("user_id", 1),
+            request.get("description")
+        )
+
     if action == "get_all_rooms":
         rows = get_all_room_status()
         return {

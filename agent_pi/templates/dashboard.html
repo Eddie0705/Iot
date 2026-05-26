@@ -154,6 +154,11 @@
             <p>Check in or check out of a booked room</p>
         </a>
 
+        <a href="/report-fault" class="card">
+            <h3>Report Fault</h3>
+            <p>Report a broken or faulty room</p>
+        </a>
+
         {% if session.get("role") == "security" %}
         <a href="/security-room-status" class="card">
             <h3>Security Room Status</h3>
