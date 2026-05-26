@@ -1,11 +1,11 @@
-import sense_hat as SenseHat
+from sense_emu import SenseHat
 from mqtt_client import *
 
 #commented out because sense-emu is kinda broken rn though no reason it wouldnt work on a real pi remember to change import
 def getWeatherStats() -> tuple[float, float, float]:
     s = SenseHat()
     humidity, pressure, temperature = -1,-1,-1
-    
+
     try:
         humidity = s.get_humidity()
         pressure = s.get_pressure()
@@ -16,34 +16,24 @@ def getWeatherStats() -> tuple[float, float, float]:
 
     return (humidity, pressure, temperature)
 
-def isBooked() -> bool:    
-    RESPONSE = "response/bookings"
-    if RESPONSE not in subscribeTopics:
-        subscribeTopics.append(RESPONSE)
-    
-    with "request/bookings" as REQUEST:
-        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+def getStatus():
+    with "room/request/status" as REQUEST:
+        client.publish(REQUEST, json.dumps({
+            "action": "get_room_status",
+            "id": ROOMID
+        }).encode())
 
-    # Publish Request
     time.sleep(2) # Wait for response
-    
-    if (response[RESPONSE][-1].lower() == "false"):
-        return False
-    elif (response[RESPONSE][-1].lower() == "true"):
-        return True
-    else:
-        raise TypeError(f"This topic does not return a valid result, {RESPONSE=}, {response[RESPONSE][-1].lower()=}")
 
+    return response["get_room_status"]["status"]
 
-def getSchedule() -> list[list[str]]:
-    RESPONSE = "response/schedule"
-    if RESPONSE not in subscribeTopics:
-        subscribeTopics.append(RESPONSE)
+def getSchedule():
+    with "room/request/schedule" as REQUEST:
+        client.publish(REQUEST, json.dumps({
+            "action": "get_room_schedule",
+            "id": ROOMID
+        }).encode())
 
-    with "request/schedule" as REQUEST:
-        client.publish(REQUEST, "INSERT REQUEST STRING HERE")
+    time.sleep(2) # Wait for response
 
-    time.sleep(2)
-    response[RESPONSE] # response result
-    
-    return None
+    return response["get_room_schedule"]["schedule"]
