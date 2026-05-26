@@ -397,10 +397,10 @@ def book_room(room_id, start_time, end_time, user_id=1):
                 "message": "Room not found"
             }
 
-        if room[0] != "available":
+        if room[0].lower() in ("maintenance", "fault"):
             return {
                 "status": "error",
-                "message": f"Room is currently {room[0]}"
+                "message": f"Room is currently {room[0]} and cannot be booked"
             }
 
         cur.execute("""
@@ -567,6 +567,38 @@ def use_room(booking_id, room_id, token, user_id=1):
             "message": f"Database error: {e}"
         }
 
+    finally:
+        if con:
+            con.close()
+
+
+def checkin_by_token(room_id, token):
+    con = None
+    try:
+        con = get_connection()
+        cur = con.cursor()
+        cur.execute("""
+            SELECT booking_id, user_id
+            FROM bookings
+            WHERE room_id = %s
+            AND token = %s
+            AND status = 'Booked'
+            AND token_used = FALSE
+        """, (room_id, token))
+        booking = cur.fetchone()
+        if not booking:
+            return {"status": "error", "message": "Invalid or already used token"}
+        booking_id, user_id = booking
+        cur.execute("""
+            UPDATE bookings SET status = 'Checked In', token_used = TRUE
+            WHERE booking_id = %s
+        """, (booking_id,))
+        cur.execute("UPDATE rooms SET status = 'In Use' WHERE room_id = %s", (room_id,))
+        con.commit()
+        log_action(user_id, "USE_ROOM", f"User checked in to room {room_id} via token")
+        return {"status": "success", "message": "Check-in successful"}
+    except MySQLdb.Error as e:
+        return {"status": "error", "message": f"Database error: {e}"}
     finally:
         if con:
             con.close()

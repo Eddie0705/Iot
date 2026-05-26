@@ -23,7 +23,8 @@ from database import (
     use_room,
     return_room,
     get_room_status,
-    get_room_schedule
+    get_room_schedule,
+    checkin_by_token
 )
 
 HOST = "0.0.0.0"
@@ -127,6 +128,9 @@ def handle_request(request):
             request.get("room_name"),
             request.get("status")
         )
+
+    if action == "checkin_by_token":
+        return checkin_by_token(request.get("room_id"), request.get("token"))
 
     if action == "get_room_status":
         return get_room_status(request.get("room_id"))

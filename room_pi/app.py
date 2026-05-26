@@ -1,5 +1,6 @@
-from flask import Flask, render_template, jsonify
-from web_data import getWeatherStats, getStatus, getRoomName, getSchedule
+from flask import Flask, render_template, jsonify, request
+from web_data import getWeatherStats, getStatus, getRoomName, getSchedule, ROOM_ID
+from socket_client import send_message
 
 app = Flask(__name__)
 
@@ -64,6 +65,17 @@ def booking_status():
 @app.route("/schedule")
 def schedule():
     return jsonify({"bookings": getSchedule()})
+
+
+@app.route("/checkin", methods=["POST"])
+def checkin():
+    token = request.form.get("token")
+    result = send_message({
+        "action": "checkin_by_token",
+        "room_id": ROOM_ID,
+        "token": token
+    })
+    return jsonify(result)
 
 
 if __name__ == "__main__":

@@ -149,6 +149,22 @@
         </span>
     </div>
 
+    <div class="card" style="margin-bottom: 20px;">
+        <h2>Check In</h2>
+        <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            <div>
+                <label style="display:block; color:#9ca3af; font-size:0.85rem; margin-bottom:4px;">Token</label>
+                <input id="checkin-token" type="text" placeholder="Enter your booking token"
+                    style="background:#0f1117; border:1px solid #2d3148; border-radius:8px; color:#f3f4f6; padding:10px 14px; font-size:1rem; width:260px;">
+            </div>
+            <button onclick="submitCheckin()"
+                style="background:#1d4ed8; color:#fff; border:none; border-radius:8px; padding:10px 24px; font-size:1rem; font-weight:600; cursor:pointer;">
+                Check In
+            </button>
+        </div>
+        <p id="checkin-msg" style="margin-top:12px; font-size:0.95rem;"></p>
+    </div>
+
     <div class="grid">
         <div class="card">
             <h2>Weather</h2>
@@ -270,6 +286,39 @@
         setInterval(fetchStatus, 5000);
         setInterval(fetchWeather, 10000);
         setInterval(fetchSchedule, 30000);
+
+        function submitCheckin() {
+            const token = document.getElementById("checkin-token").value;
+            const msg = document.getElementById("checkin-msg");
+
+            if (!token) {
+                msg.style.color = "#f87171";
+                msg.textContent = "Please enter your token.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("token", token);
+
+            fetch("/checkin", { method: "POST", body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        msg.style.color = "#4ade80";
+                        msg.textContent = "Check-in successful! Welcome.";
+                        document.getElementById("checkin-token").value = "";
+                        fetchSchedule();
+                        fetchStatus();
+                    } else {
+                        msg.style.color = "#f87171";
+                        msg.textContent = data.message || "Check-in failed.";
+                    }
+                })
+                .catch(() => {
+                    msg.style.color = "#f87171";
+                    msg.textContent = "Connection error.";
+                });
+        }
     </script>
 </body>
 </html>
