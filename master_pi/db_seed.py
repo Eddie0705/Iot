@@ -30,9 +30,9 @@ try:
     # Bookings
     cur.execute("""
         INSERT INTO bookings (user_id, room_id, start_time, end_time, status, token, token_used) VALUES
-        (4, 1, '2026-05-18 09:00:00', '2026-05-18 11:00:00', 'confirmed', 'TOKEN-ABC123', FALSE),
-        (5, 2, '2026-05-18 13:00:00', '2026-05-18 15:00:00', 'confirmed', 'TOKEN-DEF456', FALSE),
-        (6, 1, '2026-05-19 10:00:00', '2026-05-19 12:00:00', 'confirmed', 'TOKEN-GHI789', FALSE),
+        (4, 1, '2026-05-18 09:00:00', '2026-05-18 11:00:00', 'booked', 'TOKEN-ABC123', FALSE),
+        (5, 2, '2026-05-18 13:00:00', '2026-05-18 15:00:00', 'booked', 'TOKEN-DEF456', FALSE),
+        (6, 1, '2026-05-19 10:00:00', '2026-05-19 12:00:00', 'booked', 'TOKEN-GHI789', FALSE),
         (4, 4, '2026-05-17 09:00:00', '2026-05-17 11:00:00', 'completed', 'TOKEN-JKL012', TRUE)
     """)
 
