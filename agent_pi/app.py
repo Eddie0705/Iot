@@ -165,7 +165,6 @@ def room_use():
             "booking_id": booking_id,
             "room_id": room_id,
             "token": token,
-            "token": request.form.get("token", ""),
             "user_id": session.get("user_id", 1)
         }
 
