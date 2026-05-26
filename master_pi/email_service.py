@@ -1,3 +1,10 @@
+# =============================================================================
+# CUSTOM ENHANCEMENT 1: Automated Email Notifications
+# Sends booking confirmation and cancellation emails to users via Gmail SMTP.
+# Triggered server-side from database.py after each booking or cancellation is
+# committed, so users receive their access token directly in their inbox without
+# needing to manually copy it from the web page.
+# =============================================================================
 import smtplib
 import sys
 import os
