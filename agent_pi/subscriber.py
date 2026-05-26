@@ -77,3 +77,12 @@ def start_subscriber():
 
     except Exception as e:
         print("MQTT unavailable:", e)
+
+
+if __name__ == "__main__":
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect(BROKER, PORT, 60)
+    print("Waiting for MQTT alerts...")
+    client.loop_forever()

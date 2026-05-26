@@ -130,14 +130,11 @@ def update_room_status(room_name, new_status):
 
     # Publish MQTT so all subscribers (Sense HAT, Room Pi) are notified
     try:
-        import paho.mqtt.client as mqtt
+        import paho.mqtt.publish as mqtt_publish
         import sys, os
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'common'))
         from config import MASTER_HOST
-        mq = mqtt.Client()
-        mq.connect(MASTER_HOST, 1883, 60)
-        mq.publish(f"rooms/{room_name}/status", new_status)
-        mq.disconnect()
+        mqtt_publish.single(f"rooms/{room_name}/status", new_status, hostname=MASTER_HOST)
     except Exception as e:
         print(f"MQTT publish failed: {e}")
 
