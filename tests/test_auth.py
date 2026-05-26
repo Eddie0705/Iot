@@ -25,7 +25,7 @@ class TestLogin(unittest.TestCase):
 
         result = login_user("alice@rmit.edu.au", "pass123")
 
-        self.assertTrue(result["success"])
+        self.assertEqual(result["status"], "success")
         self.assertEqual(result["email"], "alice@rmit.edu.au")
         self.assertEqual(result["role"], "user")
 
@@ -39,7 +39,7 @@ class TestLogin(unittest.TestCase):
 
         result = login_user("alice@rmit.edu.au", "wrongpassword")
 
-        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "error")
         self.assertEqual(result["message"], "Invalid email or password")
 
     @patch("master_pi.database.get_connection")
@@ -52,7 +52,7 @@ class TestLogin(unittest.TestCase):
 
         result = login_user("nobody@rmit.edu.au", "pass123")
 
-        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "error")
 
     @patch("master_pi.database.get_connection")
     def test_login_db_error(self, mock_get_connection):
@@ -60,7 +60,7 @@ class TestLogin(unittest.TestCase):
 
         result = login_user("alice@rmit.edu.au", "pass123")
 
-        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "error")
         self.assertIn("Database error", result["message"])
 
     @patch("master_pi.database.get_connection")
