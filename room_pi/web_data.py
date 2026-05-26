@@ -27,13 +27,18 @@ def getStatus():
 
     return response["get_room_status"]["status"]
 
-def getSchedule():
-    with "room/request/schedule" as REQUEST:
-        client.publish(REQUEST, json.dumps({
-            "action": "get_room_schedule",
-            "id": ROOMID
-        }).encode())
 
-    time.sleep(2) # Wait for response
 
-    return response["get_room_schedule"]["schedule"]
+def getNextBooking():
+    return send_message({
+        "action": "get_next_booking",
+        "room_id": ROOMID
+    })
+    
+
+def getCurrentBooking():
+    return send_message({
+        "action": "get_current_booking",
+        "room_id": ROOMID
+    })
+ 
