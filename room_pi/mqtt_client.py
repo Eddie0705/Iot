@@ -4,7 +4,7 @@ import json
 import secrets
 
 client = mqtt.Client()
-BROKER = "34.30.131.18"
+BROKER = "10.132.60.32" # FIX IP
 
 
 def on_connect(client, userdata, flags, rc):
@@ -24,7 +24,8 @@ def on_connect(client, userdata, flags, rc):
         global ROOMID
         try:
             ROOMID = response["set_room_id"]["id"]
-        except: # TODO: handle what happens if id is NOT returned or saved or blank
+        except: 
+            # TODO: handle what happens if id is NOT returned or saved or blank
             return
 
         
@@ -57,6 +58,11 @@ def on_message(client, userdata, msg):
                 response["get_booking_status"] = {
                     #TODO: whatever that is
                 }
+            case "get_room_status":
+                print("Updates Room Status")
+                response["get_room_status"] = {
+                    "status": message.get("status")
+                }
             case "get_booking_schedule":
                 response["get_booking_schedule"] = {
                     #TODO:WHATEVER THAT IS
@@ -65,14 +71,12 @@ def on_message(client, userdata, msg):
                 print(f"Action not found: {action=}")
     except Exception as e:
         print("somethign went wrong. 😁")
+        print(f"{action=}")
         print(e)
         # IS MORE CASES?!?
 
-        
 
 
-
-    return
 client.on_connect = on_connect
 client.on_message = on_message
 
