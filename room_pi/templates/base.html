@@ -11,7 +11,7 @@
         <p>Status: <span id="status">{{ status}}</span></p>
         <script>
             function fetchBookingStatus() {
-                fetch("/booking-data")
+                fetch("/booking-status")
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById("status").innerText = data.status;
