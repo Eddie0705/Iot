@@ -1,6 +1,10 @@
 import paho.mqtt.client as mqtt
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'common'))
+from config import MASTER_HOST
 
-BROKER = "10.132.66.24"
+BROKER = MASTER_HOST
 PORT = 1883
 ## this runs when Agent Pi connects to MQTT broker
 def on_connect(client, userdata, flags, rc):
