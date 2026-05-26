@@ -77,12 +77,12 @@ class TestBookRoom(unittest.TestCase):
         mock_cur = MagicMock()
         mock_get_connection.return_value = mock_con
         mock_con.cursor.return_value = mock_cur
-        mock_cur.fetchone.return_value = ("in use",)
+        mock_cur.fetchone.return_value = ("maintenance",)
 
         result = book_room(1, "2026-05-25 09:00:00", "2026-05-25 11:00:00", user_id=4)
 
         self.assertEqual(result["status"], "error")
-        self.assertIn("in use", result["message"])
+        self.assertIn("maintenance", result["message"])
 
     @patch("master_pi.database.log_action")
     @patch("master_pi.database.get_connection")

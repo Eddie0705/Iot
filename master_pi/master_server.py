@@ -150,6 +150,8 @@ def handle_request(request):
 
 
 def start_server():
+    from mqtt_subscriber import start_mqtt_subscriber
+    start_mqtt_subscriber()
     ## create TCP socket server using IPv4 addresses/socket.AF_INET and TCP protocol/socket.SOCK_STREAM
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

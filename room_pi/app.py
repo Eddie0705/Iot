@@ -1,5 +1,11 @@
+import sys
+import os
 import threading
 import time
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'common'))
+
+import paho.mqtt.publish as mqtt_publish
+from config import MASTER_HOST
 from flask import Flask, render_template, jsonify, request
 from web_data import getWeatherStats, getStatus, getRoomName, getSchedule, ROOM_ID
 from socket_client import send_message
@@ -84,6 +90,16 @@ def booking_status():
 @app.route("/schedule")
 def schedule():
     return jsonify({"bookings": getSchedule()})
+
+
+@app.route("/report-fault", methods=["POST"])
+def report_fault():
+    room_name = getRoomName()
+    try:
+        mqtt_publish.single(f"rooms/{room_name}/fault", "fault", hostname=MASTER_HOST)
+        return jsonify({"status": "success", "message": f"Fault reported for {room_name}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 
 @app.route("/checkin", methods=["POST"])
