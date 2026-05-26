@@ -49,7 +49,7 @@ def dashboard():
 def send_announcement():
     message = request.form["message"]
     publish_announcement(message)
-    return redirect("/")
+    return redirect("/dashboard")
 
 
 @app.route("/logs")
