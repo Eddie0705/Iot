@@ -2,53 +2,274 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Header Block for titles, CSS, meta tags -->
-    <title>Room Pi</title>
-</head>
-<body>
-    <div class="Bookings">
-        <h1>Booking Status</h1>
-        <p>Status: <span id="status">{{ status}}</span></p>
-        <script>
-            function fetchBookingStatus() {
-                fetch("/booking-status")
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById("status").innerText = data.status;
-                    })
-                    .catch(error => console.error('Error updating weather:', error));
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ room_name }} - Room Display</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-            }
-            setInterval(fetchBookingStatus, 3000);
-        </script>
-    </div>
-    <div class="Weather">
-        <h1>Weather Stats</h1>
-        <p>Temperature: <span id="temp">{{ temperature }}</span>°C <span id="tempM">{{temperatureEmoji}}</span></p>
-        <p>Humidity: <span id="humid">{{ humidity }}</span>% <span id="humidM">{{humidityEmoji}}</span></p>
-        <p>Pressure: <span id="press">{{ pressure }}</span> <span id="pressM">hPa {{pressureEmoji}}</span></p>
-
-    <script>
-        function fetchWeather() {
-            // Call the JSON data route
-            fetch('/weather-data')
-                .then(response => response.json())
-                .then(data => {
-                    // Update the HTML text with the new values
-                    document.getElementById('temp').innerText = data.temperature;
-                    document.getElementById('humid').innerText = data.humidity;
-                    document.getElementById('press').innerText = data.pressure;
-                    
-                    document.getElementById('tempM').innerText = data.temperatureEmoji;
-                    document.getElementById('humidM').innerText = data.humidityEmoji;
-                    document.getElementById('pressM').innerText = data.pressureEmoji;
-                })
-                .catch(error => console.error('Error updating weather:', error));
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1117;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 24px;
         }
 
-        // Check for new weather data every 3000 milliseconds (3 seconds)
-        setInterval(fetchWeather, 3000);
-    </script>
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: capitalize;
+            letter-spacing: 0.04em;
+        }
+
+        .status-available   { background: #166534; color: #bbf7d0; }
+        .status-in-use      { background: #1e3a8a; color: #bfdbfe; }
+        .status-maintenance { background: #78350f; color: #fde68a; }
+        .status-fault       { background: #7f1d1d; color: #fecaca; }
+        .status-unknown     { background: #374151; color: #d1d5db; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: #1c1f2e;
+            border-radius: 12px;
+            padding: 22px 24px;
+            border: 1px solid #2d3148;
+        }
+
+        .weather-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .stat-label { color: #9ca3af; }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .stat-sub {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-left: 6px;
+        }
+
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .booking-table th {
+            text-align: left;
+            padding: 8px 10px;
+            color: #6b7280;
+            font-weight: 600;
+            border-bottom: 1px solid #2d3148;
+        }
+
+        .booking-table td {
+            padding: 10px 10px;
+            border-bottom: 1px solid #1e2236;
+            color: #d1d5db;
+        }
+
+        .booking-table tr:last-child td { border-bottom: none; }
+
+        .no-bookings {
+            color: #6b7280;
+            font-style: italic;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .chip-booked    { background: #1e3a8a; color: #bfdbfe; }
+        .chip-checkedin { background: #166534; color: #bbf7d0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>{{ room_name }}</h1>
+            <p style="color:#6b7280; margin-top:4px;">Room Display Terminal</p>
+        </div>
+        <span id="status-badge" class="status-badge status-{{ status | lower | replace(' ', '-') }}">
+            {{ status }}
+        </span>
     </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Weather</h2>
+            <div class="weather-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Temperature</span>
+                    <span>
+                        <span id="temp" class="stat-value">{{ temperature }}</span>
+                        <span class="stat-sub">°C &mdash; <span id="tempLabel"></span></span>
+                    </span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Humidity</span>
+                    <span>
+                        <span id="humid" class="stat-value">{{ humidity }}</span>
+                        <span class="stat-sub">% &mdash; <span id="humidLabel"></span></span>
+                    </span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Pressure</span>
+                    <span>
+                        <span id="press" class="stat-value">{{ pressure }}</span>
+                        <span class="stat-sub">hPa &mdash; <span id="pressLabel"></span></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Today&#39;s Schedule</h2>
+            <table class="booking-table" id="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Booked By</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="schedule-body">
+                    {% if schedule %}
+                        {% for b in schedule %}
+                        <tr>
+                            <td>{{ b.start_time[11:16] }} &ndash; {{ b.end_time[11:16] }}</td>
+                            <td>{{ b.user_name }}</td>
+                            <td>
+                                <span class="chip {% if b.status == 'Checked In' %}chip-checkedin{% else %}chip-booked{% endif %}">
+                                    {{ b.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="3" class="no-bookings">No bookings today</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const STATUS_CLASSES = {
+            "available": "status-available",
+            "in use": "status-in-use",
+            "in_use": "status-in-use",
+            "maintenance": "status-maintenance",
+            "fault": "status-fault"
+        };
+
+        function setStatusBadge(status) {
+            const badge = document.getElementById("status-badge");
+            badge.textContent = status;
+            badge.className = "status-badge " + (STATUS_CLASSES[status.toLowerCase()] || "status-unknown");
+        }
+
+        function fetchStatus() {
+            fetch("/booking-status")
+                .then(r => r.json())
+                .then(data => setStatusBadge(data.status))
+                .catch(() => {});
+        }
+
+        function fetchWeather() {
+            fetch("/weather-data")
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById("temp").textContent = data.temperature;
+                    document.getElementById("humid").textContent = data.humidity;
+                    document.getElementById("press").textContent = data.pressure;
+                    document.getElementById("tempLabel").textContent = data.temperatureLabel;
+                    document.getElementById("humidLabel").textContent = data.humidityLabel;
+                    document.getElementById("pressLabel").textContent = data.pressureLabel;
+                })
+                .catch(() => {});
+        }
+
+        function fetchSchedule() {
+            fetch("/schedule")
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById("schedule-body");
+                    if (!data.bookings || data.bookings.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="no-bookings">No bookings today</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.bookings.map(b => {
+                        const start = b.start_time.substring(11, 16);
+                        const end = b.end_time.substring(11, 16);
+                        const cls = b.status === "Checked In" ? "chip-checkedin" : "chip-booked";
+                        return `<tr>
+                            <td>${start} &ndash; ${end}</td>
+                            <td>${b.user_name}</td>
+                            <td><span class="chip ${cls}">${b.status}</span></td>
+                        </tr>`;
+                    }).join("");
+                })
+                .catch(() => {});
+        }
+
+        setInterval(fetchStatus, 5000);
+        setInterval(fetchWeather, 10000);
+        setInterval(fetchSchedule, 30000);
+    </script>
 </body>
 </html>

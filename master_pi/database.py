@@ -572,6 +572,66 @@ def use_room(booking_id, room_id, token, user_id=1):
             con.close()
 
 
+def get_room_status(room_id):
+    con = None
+    try:
+        con = get_connection()
+        cur = con.cursor()
+        cur.execute("""
+            SELECT room_id, room_name, location, capacity, status
+            FROM rooms WHERE room_id = %s
+        """, (room_id,))
+        row = cur.fetchone()
+        if not row:
+            return {"status": "error", "message": "Room not found"}
+        return {
+            "status": "success",
+            "room_id": row[0],
+            "room_name": row[1],
+            "location": row[2],
+            "capacity": row[3],
+            "room_status": row[4]
+        }
+    except MySQLdb.Error as e:
+        return {"status": "error", "message": f"Database error: {e}"}
+    finally:
+        if con:
+            con.close()
+
+
+def get_room_schedule(room_id):
+    con = None
+    try:
+        con = get_connection()
+        cur = con.cursor()
+        cur.execute("""
+            SELECT b.booking_id, u.full_name, b.start_time, b.end_time, b.status
+            FROM bookings b
+            JOIN users u ON b.user_id = u.user_id
+            WHERE b.room_id = %s
+            AND DATE(b.start_time) = CURDATE()
+            AND b.status IN ('Booked', 'Checked In')
+            ORDER BY b.start_time
+        """, (room_id,))
+        rows = cur.fetchall()
+        bookings = [
+            {
+                "booking_id": r[0],
+                "user_name": r[1],
+                "start_time": str(r[2]),
+                "end_time": str(r[3]),
+                "status": r[4]
+            }
+            for r in rows
+        ]
+        return {"status": "success", "bookings": bookings}
+    except MySQLdb.Error as e:
+        return {"status": "error", "message": f"Database error: {e}"}
+    finally:
+        if con:
+            con.close()
+
+
 def return_room(booking_id, room_id, user_id=1):
     con = None
 

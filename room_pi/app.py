@@ -1,61 +1,70 @@
-from flask import Flask, render_template, request, jsonify
-
-from web_data import *
+from flask import Flask, render_template, jsonify
+from web_data import getWeatherStats, getStatus, getRoomName, getSchedule
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def home():
-    # render homepage basically
-    return render_template("base.html")
-
-# for javacript refreshes
-@app.route("/weather-data")
-def weatherData():
-
     humidity, pressure, temperature = getWeatherStats()
-    
-    # Temperature Emojis
-    # this genuinely the code equivelent of a colouring book bruh 
-    if (temperature < 18): tMoji = "🥶"
-    elif (temperature < 28): tMoji = "😁"
-    else: tMoji = "🥵"
-
-    if (pressure < 1010): pMoji = "🌵"
-    elif (pressure < 1020): pMoji = "🌿"
-    else: pMoji = "💦"
-
-
-    if (humidity < 40): hMoji = "🍃"
-    elif (humidity < 60): hMoji = "☁️"
-    else: hMoji = "🥵"
-
-    return jsonify(
-        {"humidity": humidity, "pressure": pressure, "temperature": temperature,
-         "humidityEmoji": hMoji, "pressureEmoji": pMoji, "temperatureEmoji": tMoji, }
+    status = getStatus()
+    room_name = getRoomName()
+    schedule = getSchedule()
+    return render_template(
+        "base.html",
+        room_name=room_name,
+        status=status,
+        temperature=round(temperature, 1),
+        humidity=round(humidity, 1),
+        pressure=round(pressure, 1),
+        schedule=schedule
     )
+
+
+@app.route("/weather-data")
+def weather_data():
+    humidity, pressure, temperature = getWeatherStats()
+
+    if temperature < 18:
+        t_emoji = "Cold"
+    elif temperature < 28:
+        t_emoji = "Comfortable"
+    else:
+        t_emoji = "Hot"
+
+    if pressure < 1010:
+        p_emoji = "Low"
+    elif pressure < 1020:
+        p_emoji = "Normal"
+    else:
+        p_emoji = "High"
+
+    if humidity < 40:
+        h_emoji = "Dry"
+    elif humidity < 60:
+        h_emoji = "Comfortable"
+    else:
+        h_emoji = "Humid"
+
+    return jsonify({
+        "humidity": humidity,
+        "pressure": pressure,
+        "temperature": temperature,
+        "humidityLabel": h_emoji,
+        "pressureLabel": p_emoji,
+        "temperatureLabel": t_emoji,
+    })
+
 
 @app.route("/booking-status")
-def bookingUpdates():
-     # define this function
-    return jsonify(
-        {"status": getStatus()}
-    )
+def booking_status():
+    return jsonify({"status": getStatus()})
 
 
+@app.route("/schedule")
+def schedule():
+    return jsonify({"bookings": getSchedule()})
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5003, debug=True)

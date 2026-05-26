@@ -21,7 +21,9 @@ from database import (
     book_room,
     cancel_booking,
     use_room,
-    return_room
+    return_room,
+    get_room_status,
+    get_room_schedule
 )
 
 HOST = "0.0.0.0"
@@ -125,7 +127,13 @@ def handle_request(request):
             request.get("room_name"),
             request.get("status")
         )
-           
+
+    if action == "get_room_status":
+        return get_room_status(request.get("room_id"))
+
+    if action == "get_room_schedule":
+        return get_room_schedule(request.get("room_id"))
+
     else:
         return {
             "status": "error",
