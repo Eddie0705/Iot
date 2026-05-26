@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
 from mqtt_admin import publish_announcement
-from mqtt_admin import publish_room_status
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'master_pi'))
 
@@ -128,7 +127,6 @@ def confirm_fault(report_id):
         resolve_fault_report(report_id)
         update_room_status(room_name, "fault")
         print(f"confirm_fault: updated {room_name} to fault")
-        publish_room_status(room_name, "fault")
         publish_announcement(f"Room {room_name} down, waiting for maintenance")
     return redirect("/room_status")
 
@@ -146,7 +144,6 @@ def update_room():
     room = request.form["room"]
     status = request.form["status"]
     update_room_status(room, status)
-    publish_room_status(room, status)
     return redirect("/room_status")
 
 
