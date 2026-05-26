@@ -6,29 +6,41 @@ from config import MASTER_HOST
 
 BROKER = MASTER_HOST
 PORT = 1883
-## this runs when Agent Pi connects to MQTT broker
+
+security_alerts = []
+
+
+# Connect to MQTT broker
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Agent Pi connected to MQTT broker")
         client.subscribe("admin/announcements")
         client.subscribe("rooms/+/status")
-        print("Subscribed to admin/announcements and rooms/+/status")
+        print("Subscribed successfully")
     else:
-        print("Connection failed")
+        print("MQTT connection failed")
 
 
-## this runs when Agent Pi receives an alert
+# Receive MQTT messages
 def on_message(client, userdata, msg):
     alert_message = msg.payload.decode()
     print("MQTT alert received:", alert_message)
 
+    security_alerts.insert(0, alert_message)
 
-client = mqtt.Client()
+    if len(security_alerts) > 5:
+        security_alerts.pop()
 
-client.on_connect = on_connect
-client.on_message = on_message
 
-client.connect(BROKER, PORT, 60)
+# Start subscriber in background
+def start_subscriber():
+    try:
+        client = mqtt.Client()
+        client.on_connect = on_connect
+        client.on_message = on_message
 
-print("Waiting for MQTT alerts...")
-client.loop_forever()
+        client.connect(BROKER, PORT, 60)
+        client.loop_start()
+
+    except Exception as e:
+        print("MQTT unavailable:", e)

@@ -24,7 +24,7 @@ def login_user(email, password):
 
         if user:
             return {
-                "success": True,
+                "status": "success",
                 "message": "Login successful",
                 "user_id": user[0],
                 "email": user[1],
@@ -33,13 +33,13 @@ def login_user(email, password):
             }
 
         return {
-            "success": False,
+            "status": "error",
             "message": "Invalid email or password"
         }
 
     except MySQLdb.Error as e:
         return {
-            "success": False,
+            "status": "error",
             "message": f"Database error: {e}"
         }
 
@@ -301,7 +301,7 @@ def search_room(start_time, end_time):
         cur.execute("""
             SELECT room_id, room_name, location, capacity, status
             FROM rooms
-            WHERE status = 'Available'
+            WHERE status = 'available'
             AND room_id NOT IN (
                 SELECT room_id
                 FROM bookings
@@ -362,7 +362,7 @@ def book_room(room_id, start_time, end_time, user_id=1):
                 "message": "Room not found"
             }
 
-        if room[0] != "Available":
+        if room[0] != "available":
             return {
                 "status": "error",
                 "message": f"Room is currently {room[0]}"
@@ -562,13 +562,13 @@ def return_room(booking_id, room_id, user_id=1):
 
         cur.execute("""
             UPDATE bookings
-            SET status = 'Completed'
+            SET status = 'completed'
             WHERE booking_id = %s
         """, (booking_id,))
 
         cur.execute("""
             UPDATE rooms
-            SET status = 'Available'
+            SET status = 'available'
             WHERE room_id = %s
         """, (room_id,))
 
@@ -592,3 +592,33 @@ def return_room(booking_id, room_id, user_id=1):
     finally:
         if con:
             con.close()
+
+def update_room_status(room_id, status):
+    con = None
+
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute("""
+            UPDATE rooms
+            SET status = %s
+            WHERE room_id = %s
+        """, (status, room_id))
+
+        con.commit()
+
+        return {
+            "status": "success",
+            "message": f"Room {room_id} status updated to {status}"
+        }
+
+    except MySQLdb.Error as e:
+        return {
+            "status": "error",
+            "message": f"Database error: {e}"
+        }
+
+    finally:
+        if con:
+            con.close()        

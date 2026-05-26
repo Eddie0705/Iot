@@ -1,10 +1,11 @@
-import sense_emu as SenseHat
+import sense_hat as SenseHat
 from mqtt_client import *
 
 #commented out because sense-emu is kinda broken rn though no reason it wouldnt work on a real pi remember to change import
 def getWeatherStats() -> tuple[float, float, float]:
     s = SenseHat()
-
+    humidity, pressure, temperature = -1,-1,-1
+    
     try:
         humidity = s.get_humidity()
         pressure = s.get_pressure()

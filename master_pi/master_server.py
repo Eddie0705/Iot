@@ -89,7 +89,7 @@ def handle_request(request):
     if action == "cancel_booking":
         return cancel_booking(
             request.get("booking_id"),
-            request.get("user_id", 1)
+            request.get("user_id")
         )
 
     if action == "use_room":
@@ -104,7 +104,13 @@ def handle_request(request):
             request.get("booking_id"),
             request.get("room_id")
         )
-        
+    
+    if action == "update_room_status":
+        return update_room_status(
+            request.get("room_id"),
+            request.get("status")
+        )
+           
     else:
         return {
             "status": "error",

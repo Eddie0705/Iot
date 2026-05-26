@@ -1,9 +1,30 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import time
 from client import send_request
+from subscriber import start_subscriber, security_alerts
 from qr_service import generate_qr_base64
 
 app = Flask(__name__)
-app.secret_key = "agent_secret_key"
+start_subscriber()
+app.secret_key = "agent-pi-secret-key"
+
+try:
+    from sense_hat import SenseHat
+    sense = SenseHat()
+except Exception:
+    sense = None
+
+
+def show_fault_warning():
+    if sense is None:
+        print("FAULT WARNING: Sense HAT not available")
+        return
+
+    for _ in range(5):
+        sense.clear(255, 0, 0)
+        time.sleep(0.4)
+        sense.clear()
+        time.sleep(0.4)
 
 
 @app.route("/")
@@ -24,7 +45,7 @@ def login():
 
         if response.get("status") == "success":
             session["user_id"] = response.get("user_id")
-            session["email"] = response.get("email")
+            session["role"] = response.get("role")
             return redirect(url_for("dashboard"))
 
         return render_template("login.html", response=response)
@@ -135,12 +156,14 @@ def room_use():
         booking_id = request.form["booking_id"]
         room_id = request.form["room_id"]
         room_action = request.form["room_action"]
+        token = request.form["token"]
 
         ## create request data for Master Pi
         request_data = {
             "action": room_action,
             "booking_id": booking_id,
             "room_id": room_id,
+            "token": token,
             "token": request.form.get("token", ""),
             "user_id": session.get("user_id", 1)
         }
@@ -154,10 +177,41 @@ def room_use():
     ## open room use page
     return render_template("room_use.html")
 
+@app.route("/security-room-status", methods=["GET", "POST"])
+def security_room_status():
+
+    if session.get("role") != "security":
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        new_status = request.form["status"]
+
+        request_data = {
+            "action": "update_room_status",
+            "room_id": request.form["room_id"],
+            "status": new_status
+        }
+
+        response = send_request(request_data)
+
+        if response.get("status") == "success" and new_status == "fault":
+            show_fault_warning()
+
+        return render_template("security_room_status.html", response=response)
+
+    return render_template("security_room_status.html")
+
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
-
+    return render_template(
+        "dashboard.html",
+        security_alerts=security_alerts
+    )
+    
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

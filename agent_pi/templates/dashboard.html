@@ -42,6 +42,24 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        .security-announcements {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 6px solid #dc3545;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .security-announcements h2 {
+            margin-top: 0;
+            color: #dc3545;
+        }
+
+        .security-announcements p {
+            margin: 8px 0;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -89,7 +107,7 @@
 
 <div class="navbar">
     <h2>Classroom Booking System</h2>
-    <span>Welcome, {{ user }} | <a href="/login">Logout</a></span>
+    <span>Welcome, {{ user }} | <a href="/logout">Logout</a></span>
 </div>
 
 <div class="container">
@@ -103,23 +121,49 @@
         <p>Book and manage your classroom reservations.</p>
     </div>
 
+    {% if session.get("role") == "security" %}
+    <div class="security-announcements">
+        <h2>Security Announcements</h2>
+
+        {% if security_alerts %}
+            {% for alert in security_alerts %}
+                <p>🚨 {{ alert }}</p>
+            {% endfor %}
+        {% else %}
+            <p>No active security alerts.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <div class="grid">
+
         <a href="/search" class="card">
             <h3>Search Rooms</h3>
             <p>Find available rooms by date and time</p>
         </a>
+
         <a href="/book" class="card">
             <h3>Book a Room</h3>
             <p>Reserve a classroom for your session</p>
         </a>
+
         <a href="/cancel" class="card">
             <h3>Cancel Booking</h3>
             <p>Cancel an existing reservation</p>
         </a>
+
         <a href="/room-use" class="card">
             <h3>Use / Return Room</h3>
             <p>Check in or check out of a booked room</p>
         </a>
+
+        {% if session.get("role") == "security" %}
+        <a href="/security-room-status" class="card">
+            <h3>Security Room Status</h3>
+            <p>Update room status and manage fault alerts</p>
+        </a>
+        {% endif %}
+
     </div>
 </div>
 

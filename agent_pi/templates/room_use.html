@@ -3,50 +3,147 @@
 <head>
     <title>Use or Return Room</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f0f7f2; margin: 0; }
-        .navbar { background-color: #1a6b3c; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .navbar h2 { margin: 0; }
-        .navbar a { color: white; text-decoration: none; }
-        .container { max-width: 500px; margin: 40px auto; padding: 0 20px; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card h2 { margin-top: 0; color: #1a6b3c; }
-        label { display: block; margin-bottom: 5px; color: #555; }
-        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
-        button { padding: 10px 24px; background-color: #1a6b3c; color: white; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; }
-        button:hover { background-color: #145530; }
-        .message { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.95em; }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f7f2;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #1a6b3c;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #1a6b3c;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a6b3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #145530;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
+
 <body>
-<div class="navbar">
-    <h2>Room Access</h2>
-    <a href="/dashboard">Back to Dashboard</a>
-</div>
-<div class="container">
-    <div class="card">
-        <h2>Use or Return Room</h2>
-        {% if response %}
-            <div class="message {% if response.status == 'success' %}success{% else %}error{% endif %}">
-                {{ response.message }}
-            </div>
-        {% endif %}
-        <form method="POST" action="/room-use">
-            <label>Booking ID</label>
-            <input type="text" name="booking_id" required>
-            <label>Room ID</label>
-            <input type="text" name="room_id" required>
-            <label>Token (required for Use Room)</label>
-            <input type="text" name="token" placeholder="Enter your booking token">
-            <label>Action</label>
-            <select name="room_action" required>
-                <option value="use_room">Use Room</option>
-                <option value="return_room">Return Room</option>
-            </select>
-            <button type="submit">Send Request</button>
-        </form>
+
+    <div class="navbar">
+        <h2>Room Access</h2>
+        <a href="/dashboard">Back to Dashboard</a>
     </div>
-</div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Use or Return Room</h2>
+
+            {% if response %}
+                <div class="message {% if response.status == 'success' %}success{% else %}error{% endif %}">
+                    {{ response.message }}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="/room-use">
+
+                <label>Booking ID</label>
+                <input type="text" name="booking_id" required>
+
+                <label>Room ID</label>
+                <input type="text" name="room_id" required>
+
+                <label>Booking Token</label>
+                <input type="text" name="token" required>
+
+                <label>Action</label>
+                <select name="room_action" required>
+                    <option value="use_room">Use Room</option>
+                    <option value="return_room">Return Room</option>
+                </select>
+
+                <button type="submit">Send Request</button>
+
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -4,7 +4,7 @@ import json
 import secrets
 
 client = mqtt.Client()
-BROKER = "INSER.IP.OF.MASTER.PI"
+BROKER = "34.30.131.18"
 
 
 def on_connect(client, userdata, flags, rc):
@@ -24,7 +24,7 @@ def on_connect(client, userdata, flags, rc):
         global ROOMID
         try:
             ROOMID = response["set_room_id"]["id"]
-        except: # handle what happens if id is NOT returned or saved or blank
+        except: # TODO: handle what happens if id is NOT returned or saved or blank
             return
 
         
@@ -39,29 +39,33 @@ def on_message(client, userdata, msg):
     global SECRET
     message = json.loads(msg.payload.decode()) # decode to json becasue thats what is sent by master pi
     
-    
-    action = message.get("action")
-    match action: # handle actions
+    try:
+        action = message.get("action")
+        match action: # handle actions
+            case "set_room_id":
+                print("set_room_id action recieved")
 
-        case "set_room_id":
-            print("set_room_id action recieved")
-
-            if SECRET == message.get("key"):
-                print("valid key ID")
-                response["set_room_id"] = {
-                    "id": message.get("id")
-                }
-            else:
-                print("invalid key id")
+                if SECRET == message.get("key"):
+                    print("valid key ID")
+                    response["set_room_id"] = {
+                        "id": message.get("id")
+                    }
+                else:
+                    print("invalid key id")
             
-        case "get_booking_status":
-            response["get_booking_status"] = {
-                #TODO: whatever that is
-            }
-        case "get_booking_schedule":
-            response["get_booking_schedule"] = {
-                #TODO:WHATEVER THAT IS
-            }
+            case "get_booking_status":
+                response["get_booking_status"] = {
+                    #TODO: whatever that is
+                }
+            case "get_booking_schedule":
+                response["get_booking_schedule"] = {
+                    #TODO:WHATEVER THAT IS
+                }
+            case _: # default case
+                print(f"Action not found: {action=}")
+    except Exception as e:
+        print("somethign went wrong. 😁")
+        print(e)
         # IS MORE CASES?!?
 
         
