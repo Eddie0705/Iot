@@ -14,8 +14,6 @@ def on_connect(client, userdata, flags, rc):
 
 
 
-
-
 response = {}
 def on_message(client, userdata, msg):
     global response
