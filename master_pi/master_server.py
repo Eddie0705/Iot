@@ -3,6 +3,8 @@ import json
 # schedule of user booking (need time of booking) + confirmation of check in 
 from database import (
     login_user,
+    get_room_status,
+    get_next_booking,
     get_booking_logs,
     get_usage_logs,
     get_booking_history,
@@ -125,7 +127,22 @@ def handle_request(request):
             request.get("room_name"),
             request.get("status")
         )
-           
+    if action == "get_room_status":
+        return get_room_status(
+            request.get("room_id")
+        )
+
+    if action == "get_next_booking":
+        return get_next_booking(
+            request.get("room_id")
+        )
+
+    # if action == "report_fault":
+    #     return report_fault(
+    #         request.get("room_id"),
+    #         request.get("reported_by", 1),
+    #         request.get("description", "Room Pi reported fault")
+    #     )
     else:
         return {
             "status": "error",
