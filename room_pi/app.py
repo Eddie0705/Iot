@@ -47,9 +47,9 @@ def weather_data():
         h_emoji = "Humid"
 
     return jsonify({
-        "humidity": humidity,
-        "pressure": pressure,
-        "temperature": temperature,
+        "humidity": round(humidity, 1),
+        "pressure": round(pressure, 1),
+        "temperature": round(temperature, 1),
         "humidityLabel": h_emoji,
         "pressureLabel": p_emoji,
         "temperatureLabel": t_emoji,
