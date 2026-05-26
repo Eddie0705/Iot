@@ -2,7 +2,7 @@ import socket
 import json
 
 
-HOST = "10.132.60.32"
+HOST = "10.132.58.121"
 PORT = 5050
 
 def send_message(message_data):
