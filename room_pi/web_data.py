@@ -1,39 +1,47 @@
-from sense_emu import SenseHat
-from mqtt_client import *
+import os
+from socket_client import send_message
 
-#commented out because sense-emu is kinda broken rn though no reason it wouldnt work on a real pi remember to change import
-def getWeatherStats() -> tuple[float, float, float]:
-    s = SenseHat()
-    humidity, pressure, temperature = -1,-1,-1
+try:
+    from sense_emu import SenseHat
+except ImportError:
+    SenseHat = None
 
+ROOM_ID = int(os.environ.get("ROOM_ID", 1))
+
+_sense = None
+if SenseHat is not None:
     try:
-        humidity = s.get_humidity()
-        pressure = s.get_pressure()
-        temperature = s.get_temperature()
+        _sense = SenseHat()
     except Exception as e:
-        print("SenseHat Weather Stats threw an Error")
-        print(e)
+        print(f"SenseHat init error: {e}")
 
-    return (humidity, pressure, temperature)
 
-def getStatus():
-    with "room/request/status" as REQUEST:
-        client.publish(REQUEST, json.dumps({
-            "action": "get_room_status",
-            "id": ROOMID
-        }).encode())
+def getWeatherStats() -> tuple[float, float, float]:
+    if _sense is None:
+        return (-1, -1, -1)
+    try:
+        return (_sense.get_humidity(), _sense.get_pressure(), _sense.get_temperature())
+    except Exception as e:
+        print(f"SenseHat error: {e}")
+        return (-1, -1, -1)
 
-    time.sleep(2) # Wait for response
 
-    return response["get_room_status"]["status"]
+def getStatus() -> str:
+    response = send_message({"action": "get_room_status", "room_id": ROOM_ID})
+    if response.get("status") == "success":
+        return response.get("room_status", "unknown")
+    return "unknown"
 
-def getSchedule():
-    with "room/request/schedule" as REQUEST:
-        client.publish(REQUEST, json.dumps({
-            "action": "get_room_schedule",
-            "id": ROOMID
-        }).encode())
 
-    time.sleep(2) # Wait for response
+def getRoomName() -> str:
+    response = send_message({"action": "get_room_status", "room_id": ROOM_ID})
+    if response.get("status") == "success":
+        return response.get("room_name", f"Room {ROOM_ID}")
+    return f"Room {ROOM_ID}"
 
-    return response["get_room_schedule"]["schedule"]
+
+def getSchedule() -> list:
+    response = send_message({"action": "get_room_schedule", "room_id": ROOM_ID})
+    if response.get("status") == "success":
+        return response.get("bookings", [])
+    return []

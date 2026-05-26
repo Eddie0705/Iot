@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Fault</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f7f2; margin: 0; }
+        .navbar { background-color: #1a6b3c; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { max-width: 500px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h2 { margin-top: 0; color: #c0392b; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        textarea { height: 100px; resize: vertical; }
+        button { padding: 10px 24px; background-color: #c0392b; color: white; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; }
+        button:hover { background-color: #a93226; }
+        .message { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.95em; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h2>Report Fault</h2>
+    <a href="/dashboard">Back to Dashboard</a>
+</div>
+<div class="container">
+    <div class="card">
+        <h2>Report a Room Fault</h2>
+        {% if response %}
+            <div class="message {% if response.status == 'success' %}success{% else %}error{% endif %}">
+                {{ response.message }}
+            </div>
+        {% endif %}
+        <form method="POST" action="/report-fault">
+            <label>Room Name</label>
+            <input type="text" name="room_name" placeholder="e.g. A204" required>
+            <label>Description</label>
+            <textarea name="description" placeholder="Describe the fault (e.g. projector not working, AC broken)" required></textarea>
+            <button type="submit">Submit Fault Report</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

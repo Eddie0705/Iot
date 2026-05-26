@@ -1,7 +1,30 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+import time
 from client import send_request
+from subscriber import start_subscriber, security_alerts
+from qr_service import generate_qr_base64
 
 app = Flask(__name__)
+start_subscriber()
+app.secret_key = "agent-pi-secret-key"
+
+try:
+    from sense_hat import SenseHat
+    sense = SenseHat()
+except Exception:
+    sense = None
+
+
+def show_fault_warning():
+    if sense is None:
+        print("FAULT WARNING: Sense HAT not available")
+        return
+
+    for _ in range(5):
+        sense.clear(255, 0, 0)
+        time.sleep(0.4)
+        sense.clear()
+        time.sleep(0.4)
 
 
 @app.route("/")
@@ -21,6 +44,9 @@ def login():
         response = send_request(request_data)
 
         if response.get("status") == "success":
+            session["user_id"] = response.get("user_id")
+            session["role"] = response.get("role")
+            session["full_name"] = response.get("full_name")
             return redirect(url_for("dashboard"))
 
         return render_template("login.html", response=response)
@@ -84,12 +110,17 @@ def book_room():
             "room_id": room_id,
             "date": date,
             "start_time": start_time,
-            "end_time": end_time
+            "end_time": end_time,
+            "user_id": session.get("user_id", 1)
         }
 
         response = send_request(request_data)
 
-        return render_template("book.html", response=response)
+        qr_code = None
+        if response.get("status") == "success":
+            qr_code = generate_qr_base64(response["booking_id"], response["token"])
+
+        return render_template("book.html", response=response, qr_code=qr_code)
 
     return render_template("book.html")
 
@@ -103,7 +134,8 @@ def cancel_booking():
         ## create request data to send to Master Pi
         request_data = {
             "action": "cancel_booking",
-            "booking_id": booking_id
+            "booking_id": booking_id,
+            "user_id": session.get("user_id", 1)
         }
 
         ## send request to Master Pi and get response
@@ -125,12 +157,16 @@ def room_use():
         booking_id = request.form["booking_id"]
         room_id = request.form["room_id"]
         room_action = request.form["room_action"]
+        token = request.form["token"]
 
         ## create request data for Master Pi
         request_data = {
             "action": room_action,
             "booking_id": booking_id,
-            "room_id": room_id
+            "room_id": room_id,
+            "token": token,
+            "token": request.form.get("token", ""),
+            "user_id": session.get("user_id", 1)
         }
 
         ## send request and get response
@@ -142,10 +178,59 @@ def room_use():
     ## open room use page
     return render_template("room_use.html")
 
+@app.route("/security-room-status", methods=["GET", "POST"])
+def security_room_status():
+
+    if session.get("role") != "security":
+        return redirect(url_for("dashboard"))
+
+    rooms_response = send_request({"action": "get_all_rooms"})
+    rooms = rooms_response.get("rooms", [])
+
+    if request.method == "POST":
+        new_status = request.form["status"]
+
+        request_data = {
+            "action": "update_room_status",
+            "room_name": request.form["room_name"],
+            "status": new_status
+        }
+
+        response = send_request(request_data)
+
+        if response.get("status") == "success" and new_status == "fault":
+            show_fault_warning()
+
+        return render_template("security_room_status.html", response=response, rooms=rooms)
+
+    return render_template("security_room_status.html", rooms=rooms)
+
+@app.route("/report-fault", methods=["GET", "POST"])
+def report_fault():
+    if request.method == "POST":
+        request_data = {
+            "action": "report_fault",
+            "room_name": request.form["room_name"],
+            "description": request.form["description"],
+            "user_id": session.get("user_id", 1)
+        }
+        response = send_request(request_data)
+        return render_template("report_fault.html", response=response)
+    return render_template("report_fault.html")
+
+
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
-
+    return render_template(
+        "dashboard.html",
+        security_alerts=security_alerts,
+        user=session.get("full_name", "")
+    )
+    
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

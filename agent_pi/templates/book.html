@@ -2,53 +2,72 @@
 <html>
 <head>
     <title>Book Room</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f7f2; margin: 0; }
+        .navbar { background-color: #1a6b3c; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { max-width: 500px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .card h2 { margin-top: 0; color: #1a6b3c; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        button { padding: 10px 24px; background-color: #1a6b3c; color: white; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; }
+        button:hover { background-color: #145530; }
+        .message { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.95em; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .token-box { background-color: #fff8e1; border: 2px solid #f0c040; border-radius: 6px; padding: 15px; text-align: center; margin-top: 10px; }
+        .token-box h3 { margin: 0 0 8px; color: #856404; }
+        .token-box .token { font-size: 1.4em; font-weight: bold; letter-spacing: 2px; color: #333; }
+        .token-box p { margin: 8px 0 0; font-size: 0.85em; color: #555; }
+    </style>
 </head>
 <body>
-
-    <h1>Book a Room</h1>
-
-    <form method="POST" action="/book">
-
-        <p>
-            <label>Room ID:</label><br>
-            <input type="text" name="room_id" required>
-        </p>
-
-        <p>
-            <label>Date:</label><br>
-            <input type="date" name="date" required>
-        </p>
-
-        <p>
-            <label>Start Time:</label><br>
-            <input type="time" name="start_time" required>
-        </p>
-
-        <p>
-            <label>End Time:</label><br>
-            <input type="time" name="end_time" required>
-        </p>
-
-        <button type="submit">Book Room</button>
-
-    </form>
+<div class="navbar">
+    <h2>Book a Room</h2>
+    <a href="/dashboard">Back to Dashboard</a>
+</div>
+<div class="container">
 
     {% if response %}
-        <h3>Master Pi Response</h3>
-        <p>Status: {{ response.status }}</p>
-        <p>Message: {{ response.message }}</p>
-
-        {% if response.token %}
-            <h2>Your Booking Token: {{ response.token }}</h2>
-            <p>Please save this token. It is required for room access.</p>
-        {% endif %}
+    <div class="message {% if response.status == 'success' %}success{% else %}error{% endif %}">
+        {{ response.message }}
+    </div>
     {% endif %}
 
-    <p>
-     <a href="/dashboard">
-        <button type="button">Back to Dashboard</button>
-     </a>
-   </p>
+    {% if response and response.token %}
+    <div class="card">
+        <h2>Booking Confirmed</h2>
+        <div class="token-box">
+            <p><strong>Booking ID:</strong> {{ response.booking_id }}</p>
+            <h3>Your Booking Token</h3>
+            <div class="token">{{ response.token }}</div>
+            <p>Enter this token at the Room Pi to check in.</p>
+            {% if qr_code %}
+            <div style="margin-top: 15px;">
+                <p style="margin-bottom: 8px; font-weight: bold; color: #856404;">Scan QR Code at Room Pi</p>
+                <img src="data:image/png;base64,{{ qr_code }}" alt="Booking QR Code" style="width: 180px; height: 180px;">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
+    <div class="card">
+        <h2>Room Booking</h2>
+        <form method="POST" action="/book">
+            <label>Room ID</label>
+            <input type="text" name="room_id" required>
+            <label>Date</label>
+            <input type="date" name="date" required>
+            <label>Start Time</label>
+            <input type="time" name="start_time" required>
+            <label>End Time</label>
+            <input type="time" name="end_time" required>
+            <button type="submit">Book Room</button>
+        </form>
+    </div>
+</div>
 </body>
 </html>
