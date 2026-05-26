@@ -5,9 +5,9 @@ import secrets
 import socket
 
 client = mqtt.Client()
-BROKER = "10.132.60.32" # FIX IP
+BROKER = "10.132.58.121"
 
-HOST = "10.132.60.32"
+HOST = "10.132.58.121"
 PORT = 5050
 
 def on_connect(client, userdata, flags, rc):
