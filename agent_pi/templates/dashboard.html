@@ -121,17 +121,14 @@
         <p>Book and manage your classroom reservations.</p>
     </div>
 
-    {% if session.get("role") == "security" %}
+    {% if session.get("role") == "security" and 'fault' in security_alerts %}
     <div class="security-announcements">
         <h2>Security Announcements</h2>
-
-        {% if security_alerts %}
-            {% for alert in security_alerts %}
+        {% for alert in security_alerts %}
+            {% if alert == 'fault' or 'fault' in alert.lower() %}
                 <p>🚨 {{ alert }}</p>
-            {% endfor %}
-        {% else %}
-            <p>No active security alerts.</p>
-        {% endif %}
+            {% endif %}
+        {% endfor %}
     </div>
     {% endif %}
 
