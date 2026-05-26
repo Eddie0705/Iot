@@ -46,6 +46,7 @@ def login():
         if response.get("status") == "success":
             session["user_id"] = response.get("user_id")
             session["role"] = response.get("role")
+            session["full_name"] = response.get("full_name")
             return redirect(url_for("dashboard"))
 
         return render_template("login.html", response=response)
@@ -222,7 +223,8 @@ def report_fault():
 def dashboard():
     return render_template(
         "dashboard.html",
-        security_alerts=security_alerts
+        security_alerts=security_alerts,
+        user=session.get("full_name", "")
     )
     
 @app.route("/logout")

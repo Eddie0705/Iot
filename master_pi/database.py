@@ -436,11 +436,8 @@ def book_room(room_id, start_time, end_time, user_id=1):
         user_row = cur.fetchone()
         cur.execute("SELECT room_name FROM rooms WHERE room_id = %s", (room_id,))
         room_row = cur.fetchone()
-        print(f"DEBUG email: user_row={user_row}, room_row={room_row}")
         if user_row and room_row:
             send_booking_confirmation(user_row[0], room_row[0], start_time, end_time, token)
-        else:
-            print("DEBUG: skipping email — user or room not found")
 
         return {
             "status": "success",

@@ -24,7 +24,6 @@ from database import (
     cancel_booking,
     use_room,
     return_room,
-    get_room_status,
     get_room_schedule,
     checkin_by_token,
     checkout_room
