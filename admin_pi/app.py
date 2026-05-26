@@ -25,7 +25,7 @@ def login():
     password = request.form["password"]
     result = login_user(email, password)
 
-    if result.get("success") and result.get("role") == "admin":
+    if result.get("status") == "success" and result.get("role") == "admin":
         session["admin"] = result["email"]
         return render_template("dashboard.html", user=result["full_name"])
 
