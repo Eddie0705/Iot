@@ -21,18 +21,18 @@ try:
     # Rooms
     cur.execute("""
         INSERT INTO rooms (room_name, location, capacity, status) VALUES
-        ('A204', 'Building A, Level 2', 30, 'Available'),
-        ('B301', 'Building B, Level 3', 50, 'Available'),
-        ('C105', 'Building C, Level 1', 20, 'Maintenance'),
-        ('D402', 'Building D, Level 4', 40, 'Available')
+        ('A204', 'Building A, Level 2', 30, 'available'),
+        ('B301', 'Building B, Level 3', 50, 'available'),
+        ('C105', 'Building C, Level 1', 20, 'maintenance'),
+        ('D402', 'Building D, Level 4', 40, 'available')
     """)
 
     # Bookings
     cur.execute("""
         INSERT INTO bookings (user_id, room_id, start_time, end_time, status, token, token_used) VALUES
-        (4, 1, '2026-05-18 09:00:00', '2026-05-18 11:00:00', 'booked', 'TOKEN-ABC123', FALSE),
-        (5, 2, '2026-05-18 13:00:00', '2026-05-18 15:00:00', 'booked', 'TOKEN-DEF456', FALSE),
-        (6, 1, '2026-05-19 10:00:00', '2026-05-19 12:00:00', 'booked', 'TOKEN-GHI789', FALSE),
+        (4, 1, '2026-05-18 09:00:00', '2026-05-18 11:00:00', 'Booked', 'TOKEN-ABC123', FALSE),
+        (5, 2, '2026-05-18 13:00:00', '2026-05-18 15:00:00', 'Booked', 'TOKEN-DEF456', FALSE),
+        (6, 1, '2026-05-19 10:00:00', '2026-05-19 12:00:00', 'Booked', 'TOKEN-GHI789', FALSE),
         (4, 4, '2026-05-17 09:00:00', '2026-05-17 11:00:00', 'completed', 'TOKEN-JKL012', TRUE)
     """)
 
