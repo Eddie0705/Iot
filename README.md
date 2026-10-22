@@ -6,6 +6,47 @@ A distributed IoT classroom management system developed for COSC2674/2755 Progra
 
 The system manages university classroom bookings, room monitoring, and admin control across multiple Raspberry Pi devices. Communication is handled via MQTT (publish-subscribe) and Socket Programming (request-response), with data persisted in a centralized remote MySQL database.
 
+> This is my personal copy of our 4-person team repository, kept for my portfolio. The full commit history is preserved, including all branches and the `submission` tag.
+
+**Tech stack:** Python, Flask, MQTT (Mosquitto, paho-mqtt), TCP sockets, MySQL on Google Cloud SQL (PyMySQL), Raspberry Pi with Sense HAT, matplotlib, qrcode, smtplib, pytest/unittest
+
+---
+
+## My Contributions (Yong Tian Goh)
+
+I owned the Admin side of the system and the cross-cutting work (MQTT, testing, design patterns, enhancements). I also helped integrate and debug the Agent Pi, Room Pi and Master Pi in the final stretch.
+
+**Admin web app** (`admin_pi/`)
+- Built the Flask admin app: login with validation, dashboard, user management (create, edit, delete users and security staff), booking and usage logs, room status management, and fault report review
+- Wrote the database query layer behind it in `master_pi/database.py`, with audit logging whenever a user is created, updated or deleted
+- Built the report generator, which creates booking-frequency and booking-status charts with matplotlib
+
+**MQTT messaging**
+- Set up publish/subscribe across devices: admin announcements and room-status updates broadcast to the Agent Pi and Room Pi
+- Built the end-to-end fault reporting flow:
+  1. The Room Pi or Agent Pi publishes a fault
+  2. A Master Pi subscriber creates a pending fault report
+  3. An admin approves it, and the room changes to Fault status
+  4. Security staff get an alert
+- Fixed dropped messages by switching from `publish()` followed by `disconnect()` to `mqtt_publish.single()`
+
+**Room state machine (State pattern)**
+- Implemented `master_pi/room_state.py`. Each room status is its own class that defines its valid transitions, so invalid changes are rejected before they reach the database. For example, a room can't go from Fault straight to In Use.
+- Wrote `design_patterns.md`, which documents the State and Facade patterns
+
+**Enhancements**
+- **Email notifications:** booking confirmation and cancellation emails sent through Gmail SMTP (`master_pi/email_service.py`)
+- **QR code booking token:** a QR code generated on booking confirmation that encodes the booking ID and token for scan-based check-in (`agent_pi/qr_service.py`)
+
+**Room Pi and Agent Pi integration**
+- Added token check-in and automatic checkout on the Room Pi
+- Fixed the bug that allowed future bookings on a room currently in use
+- Added Agent Pi session handling and fault reporting
+
+**Testing and docs**
+- Wrote the unit test suite (36 tests across auth, booking, sockets, admin and MQTT) using mocks for the database and MQTT connections
+- Wrote `test_plan.md` and most of this README
+
 ---
 
 ## Team Members & Division of Work
@@ -243,7 +284,7 @@ Tests cover (36 tests total):
 ## Command to open MySQL in the terminal (only Master Pi has access)
 
 ```
-mysql -h 34.30.131.18 -u root -p")VZ3FKr&B&nH" room_booking
+mysql -h <CLOUD_SQL_HOST> -u <DB_USER> -p room_booking
 ```
 
 ## Challenges Encountered
